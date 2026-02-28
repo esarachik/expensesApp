@@ -1,0 +1,9 @@
+# Expo
+.expo/
+
+# dependencies
+node_modules/
+
+# env files
+.env
+.env*.local
