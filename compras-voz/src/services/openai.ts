@@ -7,7 +7,7 @@ import type { Transaction } from '../types/transaction';
  */
 export async function parseTransaction(
   transcribedText: string
-): Promise<Omit<Transaction, 'textoOriginal'>> {
+): Promise<Omit<Transaction, 'id'>> {
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
   const systemPrompt = `Sos un asistente que extrae datos de transacciones financieras (ingresos y egresos) a partir de texto hablado.
@@ -22,11 +22,11 @@ Reglas:
 
 Formato de respuesta:
 {
-  "fecha": "YYYY-MM-DD",
-  "monto": 0,
-  "tipo": "egreso",
-  "categoria": "",
-  "descripcion": ""
+  "date": "YYYY-MM-DD",
+  "amount": 0,
+  "type": "egreso",
+  "category": "",
+  "description": ""
 }`;
 
   const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
@@ -58,11 +58,11 @@ Formato de respuesta:
   const parsed = JSON.parse(cleaned);
 
   return {
-    date: parsed.fecha ?? today,
-    amount: Number(parsed.monto) || 0,
-    type: parsed.tipo === 'ingreso' ? 'ingreso' : 'egreso',
-    category: parsed.categoria ?? '',
-    description: parsed.descripcion ?? '',
+    date: parsed.date ?? today,
+    amount: Number(parsed.amount) || 0,
+    type: parsed.type === 'ingreso' ? 'ingreso' : 'egreso',
+    category: parsed.category ?? '',
+    description: parsed.description ?? '',
     originalText: transcribedText    
   };
 }

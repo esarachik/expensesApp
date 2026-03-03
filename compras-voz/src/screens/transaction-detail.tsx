@@ -8,13 +8,12 @@ import { useRouter } from 'expo-router';
 
 interface TransactionParams {
   id: string;
-  fecha: string;
-  monto: string;
-  tipo: string;
-  categoria: string;
-  descripcion: string;
-  textoOriginal: string;
-  creadoEn: string;
+  date: string;
+  amount: string;
+  type: string;
+  category: string;
+  description: string;
+  originalText: string;
 }
 
 interface TransactionDetailProps {
@@ -28,7 +27,7 @@ export function TransactionDetail({ transaction, onDelete }: TransactionDetailPr
   const colors = Colors[colorScheme];
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const isIngreso = transaction.tipo === 'ingreso';
+  const isIngreso = transaction.type === 'ingreso';
 
   const handleDelete = () => setShowConfirm(true);
 
@@ -50,7 +49,7 @@ export function TransactionDetail({ transaction, onDelete }: TransactionDetailPr
             { color: isIngreso ? '#4CAF50' : '#F44336' },
           ]}
         >
-          {isIngreso ? '+' : '-'}${Number(transaction.monto).toLocaleString()}
+          {isIngreso ? '+' : '-'}${Number(transaction.amount).toLocaleString()}
         </Text>
         <View
           style={[
@@ -64,20 +63,17 @@ export function TransactionDetail({ transaction, onDelete }: TransactionDetailPr
               { color: isIngreso ? '#4CAF50' : '#F44336' },
             ]}
           >
-            {transaction.tipo?.toUpperCase()}
+            {transaction.type?.toUpperCase()}
           </Text>
         </View>
       </View>
 
       {/* Detalles */}
       <View style={[styles.card, { backgroundColor: colorScheme === 'dark' ? '#1e1e1e' : '#f5f5f5' }]}>
-        <DetailRow label="Fecha" value={transaction.fecha} color={colors} />
-        <DetailRow label="Categoría" value={transaction.categoria} color={colors} />
-        <DetailRow label="Descripción" value={transaction.descripcion} color={colors} />
-        <DetailRow label="Texto original" value={transaction.textoOriginal} color={colors} />
-        {transaction.creadoEn ? (
-          <DetailRow label="Registrado" value={transaction.creadoEn} color={colors} />
-        ) : null}
+        <DetailRow label="Fecha" value={transaction.date} color={colors} />
+        <DetailRow label="Categoría" value={transaction.category} color={colors} />
+        <DetailRow label="Descripción" value={transaction.description} color={colors} />
+        <DetailRow label="Texto original" value={transaction.originalText} color={colors} />
       </View>
 
       {/* Acciones */}

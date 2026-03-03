@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { initDatabase, closeDatabase } from '@/services/database';
+import { initDatabase } from '@/services/database';
 
 export const unstable_settings = {
   initialRouteName: '(tabs)',
@@ -16,18 +16,9 @@ export default function RootLayout() {
   const [dbReady, setDbReady] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-
     initDatabase()
-      .then(() => {
-        if (!cancelled) setDbReady(true);
-      })
+      .then(() => setDbReady(true))
       .catch((err) => console.error('Error inicializando DB:', err));
-
-    return () => {
-      cancelled = true;
-      closeDatabase();
-    };
   }, []);
 
   if (!dbReady) return null;

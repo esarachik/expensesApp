@@ -5,13 +5,12 @@ export default function TransactionModal() {
   const router = useRouter();
   const params = useLocalSearchParams<{
     id: string;
-    fecha: string;
-    monto: string;
-    tipo: string;
-    categoria: string;
-    descripcion: string;
-    textoOriginal: string;
-    creadoEn: string;
+    date: string;
+    amount: string;
+    type: string;
+    category: string;
+    description: string;
+    originalText: string;
   }>();
 
   return (

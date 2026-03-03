@@ -11,12 +11,12 @@ let initPromise: Promise<void> | null = null;
 const CREATE_TABLE_SQL = `
   CREATE TABLE IF NOT EXISTS transactions (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    date       TEXT    NOT NULL,
-    amount       REAL    NOT NULL,
+    date        TEXT    NOT NULL,
+    amount      REAL    NOT NULL,
     type        TEXT    NOT NULL,
-    category   TEXT    NOT NULL DEFAULT '',
+    category    TEXT    NOT NULL DEFAULT '',
     description TEXT    NOT NULL DEFAULT '',
-    originalText TEXT  NOT NULL DEFAULT ''   
+    originalText TEXT   NOT NULL DEFAULT ''
   );
 `;
 
@@ -32,15 +32,15 @@ export async function initDatabase(): Promise<void> {
     await db.execAsync(CREATE_TABLE_SQL);
   })();
 
-  return initPromise;
-}
-
-/** Cierra la conexión a la base de datos */
-export async function closeDatabase(): Promise<void> {
-  if (db) {
-    await db.closeAsync();
+  try {
+    await initPromise;
+  } catch (err) {
+    if (db) {
+      await db.closeAsync();
+    }
     db = null;
     initPromise = null;
+    throw err;
   }
 }
 
@@ -67,7 +67,7 @@ export async function insertTransaction(t: Transaction): Promise<number> {
 export async function getAllTransactions(): Promise<Transaction[]> {
   const database = await getDb();
   return database.getAllAsync<Transaction>(
-    'SELECT * FROM transactions ORDER BY fecha DESC, id DESC'
+    'SELECT * FROM transactions ORDER BY date DESC, id DESC'
   );
 }
 
