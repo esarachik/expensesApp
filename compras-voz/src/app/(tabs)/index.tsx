@@ -1,10 +1,10 @@
-import { View } from 'react-native';
-import VoiceRecorder from '@/components/voice-recorder';
+import VoiceRecorder from "@/components/voice-recorder";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
       <VoiceRecorder />
-    </View>
+    </SafeAreaView>
   );
 }
