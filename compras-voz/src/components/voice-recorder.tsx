@@ -21,9 +21,10 @@ import {
   Text,
   View,
 } from "react-native";
-import { insertTransaction } from "../services/database";
+import { getAccountsByMonth, insertTransaction } from "../services/database";
 import { parseTransaction } from "../services/openai";
 import { transcribeAudio } from "../services/whisper";
+import type { Account } from "../types/account";
 import type { Transaction } from "../types/transaction";
 
 export default function VoiceRecorder() {
@@ -39,6 +40,7 @@ export default function VoiceRecorder() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [availableAccounts, setAvailableAccounts] = useState<Account[]>([]);
 
   const player = useAudioPlayer(lastUri);
   const playerStatus = useAudioPlayerStatus(player);
@@ -94,7 +96,10 @@ export default function VoiceRecorder() {
       const transaction: Transaction = { ...parsed, originalText: text };
 
       // Paso 3: Mostrar para confirmación (no guardar aún)
-      setPendingTransaction(transaction);
+      const yearMonth = transaction.date.substring(0, 7);
+      const accs = await getAccountsByMonth(yearMonth);
+      setAvailableAccounts(accs);
+      setPendingTransaction({ ...transaction, accountId: null });
       setSelectedDate(new Date(transaction.date + "T12:00:00"));
       setResult(null);
       console.log(
@@ -155,6 +160,7 @@ export default function VoiceRecorder() {
 
   const onTestTransaction = () => {
     const today = new Date().toISOString().split("T")[0];
+    const yearMonth = today.substring(0, 7);
     const mock: Transaction = {
       date: today,
       amount: 1500,
@@ -162,11 +168,15 @@ export default function VoiceRecorder() {
       category: "supermercado",
       description: "Compra de prueba",
       originalText: "(datos de prueba)",
+      accountId: null,
     };
     setTranscription("(datos de prueba)");
     setPendingTransaction(mock);
     setSelectedDate(new Date(today + "T12:00:00"));
     setResult(null);
+    getAccountsByMonth(yearMonth)
+      .then(setAvailableAccounts)
+      .catch(() => {});
   };
 
   const onPlayback = () => {
@@ -268,6 +278,62 @@ export default function VoiceRecorder() {
             </Text>
             <Text style={styles.dateButtonHint}>Toca para cambiar</Text>
           </Pressable>
+
+          {availableAccounts.length > 0 && (
+            <View style={styles.accountSection}>
+              <Text style={styles.accountLabel}>Cuenta</Text>
+              <View style={styles.accountChips}>
+                <Pressable
+                  style={[
+                    styles.accountChip,
+                    !pendingTransaction.accountId && styles.accountChipActive,
+                  ]}
+                  onPress={() =>
+                    setPendingTransaction({
+                      ...pendingTransaction,
+                      accountId: null,
+                    })
+                  }
+                >
+                  <Text
+                    style={[
+                      styles.accountChipText,
+                      !pendingTransaction.accountId &&
+                        styles.accountChipTextActive,
+                    ]}
+                  >
+                    Sin cuenta
+                  </Text>
+                </Pressable>
+                {availableAccounts.map((acc) => (
+                  <Pressable
+                    key={acc.id}
+                    style={[
+                      styles.accountChip,
+                      pendingTransaction.accountId === acc.id &&
+                        styles.accountChipActive,
+                    ]}
+                    onPress={() =>
+                      setPendingTransaction({
+                        ...pendingTransaction,
+                        accountId: acc.id,
+                      })
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.accountChipText,
+                        pendingTransaction.accountId === acc.id &&
+                          styles.accountChipTextActive,
+                      ]}
+                    >
+                      {acc.type === "bank" ? "🏦" : "💳"} {acc.name}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          )}
 
           {showDatePicker && (
             <DateTimePicker
@@ -472,5 +538,40 @@ const styles = StyleSheet.create({
     color: "#666",
     fontSize: 16,
     fontWeight: "600",
+  },
+  accountSection: {
+    marginTop: 8,
+  },
+  accountLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#999",
+    textTransform: "uppercase",
+    marginBottom: 8,
+  },
+  accountChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  accountChip: {
+    borderWidth: 1.5,
+    borderColor: "#ddd",
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  accountChipActive: {
+    borderColor: "#2196F3",
+    backgroundColor: "#e3f2fd",
+  },
+  accountChipText: {
+    fontSize: 13,
+    color: "#666",
+    fontWeight: "500",
+  },
+  accountChipTextActive: {
+    color: "#1976D2",
+    fontWeight: "700",
   },
 });

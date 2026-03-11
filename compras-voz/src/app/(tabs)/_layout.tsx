@@ -39,6 +39,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="accounts"
+        options={{
+          title: "Cuentas",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={25} name="wallet.bifold" color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

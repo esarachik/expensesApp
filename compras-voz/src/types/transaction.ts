@@ -15,4 +15,6 @@ export interface Transaction {
   description: string;
 
   originalText: string;
+
+  accountId?: number | null;
 }
