@@ -1,5 +1,6 @@
 import { OPENAI_API_KEY, OPENAI_BASE_URL } from '../constants/config';
 import type { Transaction } from '../types/transaction';
+import { getCategoriesByType } from './category';
 
 /**
  * Recibe el texto transcrito y usa GPT para extraer los datos estructurados
@@ -10,15 +11,30 @@ export async function parseTransaction(
 ): Promise<Omit<Transaction, 'id'>> {
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
+  // Cargar categorias dinamicas desde la DB
+  const [ingresos, egresos] = await Promise.all([
+    getCategoriesByType('ingreso'),
+    getCategoriesByType('egreso'),
+  ]);
+  const ingresoNames = ingresos.map((c) => c.name);
+  const egresoNames = egresos.map((c) => c.name);
+
+  const fallbackIngreso = ingresoNames.includes('otros ingresos') ? 'otros ingresos' : (ingresoNames[ingresoNames.length - 1] ?? 'otros ingresos');
+  const fallbackEgreso = egresoNames.includes('otros egresos') ? 'otros egresos' : (egresoNames[egresoNames.length - 1] ?? 'otros egresos');
+
   const systemPrompt = `Sos un asistente que extrae datos de transacciones financieras (ingresos y egresos) a partir de texto hablado.
 
 Reglas:
 - Si el usuario dice "compré", "gasté", "pagué" o similar → tipo: "egreso"
 - Si el usuario dice "cobré", "me pagaron", "recibí", "ingreso" o similar → tipo: "ingreso"
 - Si no se menciona fecha, usá la fecha de hoy: ${today}
-- Inferí la categoría del contexto (supermercado, transporte, sueldo, alquiler, comida, etc.)
 - El monto siempre debe ser un número positivo
 - Respondé SOLO con JSON válido, sin texto adicional ni markdown
+
+Categorías disponibles para INGRESOS: ${ingresoNames.join(', ')}
+Categorías disponibles para EGRESOS: ${egresoNames.join(', ')}
+
+Usá la categoría que mejor corresponda de las listas anteriores. Si no hay ninguna adecuada usá "${fallbackIngreso}" o "${fallbackEgreso}" según corresponda.
 
 Formato de respuesta:
 {
@@ -57,11 +73,18 @@ Formato de respuesta:
   const cleaned = content.replace(/```json\n?|```\n?/g, '').trim();
   const parsed = JSON.parse(cleaned);
 
+  const type: 'ingreso' | 'egreso' = parsed.type === 'ingreso' ? 'ingreso' : 'egreso';
+  const allNames = type === 'ingreso' ? ingresoNames : egresoNames;
+  const rawCategory: string = (parsed.category ?? '').toLowerCase().trim();
+  const category = allNames.includes(rawCategory)
+    ? rawCategory
+    : type === 'ingreso' ? fallbackIngreso : fallbackEgreso;
+
   return {
     date: parsed.date ?? today,
     amount: Number(parsed.amount) || 0,
-    type: parsed.type === 'ingreso' ? 'ingreso' : 'egreso',
-    category: parsed.category ?? '',
+    type,
+    category,
     description: parsed.description ?? '',
     originalText: transcribedText    
   };

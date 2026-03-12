@@ -1,17 +1,23 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { Text, View } from 'react-native';
-import 'react-native-reanimated';
-import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
-import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import migrations from '../../drizzle/migrations';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { Text, View } from "react-native";
+import "react-native-reanimated";
+import migrations from "../../drizzle/migrations";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { db, expoDb } from '@/services/database';
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { seedDefaultCategories } from "@/services/category";
+import { db, expoDb } from "@/services/db";
 
 export const unstable_settings = {
-  initialRouteName: '(tabs)',
+  initialRouteName: "(tabs)",
 };
 
 export default function RootLayout() {
@@ -21,28 +27,40 @@ export default function RootLayout() {
   // Drizzle Studio dev tools — solo activo en desarrollo
   useDrizzleStudio(expoDb);
 
+  // Sembrar categorías por defecto al iniciar (solo si la tabla está vacía)
+  useEffect(() => {
+    if (success) {
+      seedDefaultCategories().catch(console.error);
+    }
+  }, [success]);
+
   if (error) {
-    console.error('Migration error:', error);
+    console.error("Migration error:", error);
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: 'red', padding: 20 }}>Error de migración: {error.message}</Text>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: "red", padding: 20 }}>
+          Error de migración: {error.message}
+        </Text>
       </View>
     );
   }
 
   if (!success) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Ejecutando migraciones...</Text>
       </View>
     );
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Detalle' }} />
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: "modal", title: "Detalle" }}
+        />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

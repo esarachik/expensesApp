@@ -11,6 +11,13 @@ export const accounts = sqliteTable('accounts', {
   month: text('month').notNull(), // YYYY-MM: mes al que pertenece este saldo inicial
 });
 
+// ─── Categorías ─────────────────────────────────────────────────────────────
+export const categories = sqliteTable('categories', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  type: text('type').$type<TransactionType>().notNull(), // 'ingreso' | 'egreso'
+});
+
 // ─── Transacciones ──────────────────────────────────────────────────────────
 export const transactions = sqliteTable('transactions', {
   id: integer('id').primaryKey({ autoIncrement: true }),

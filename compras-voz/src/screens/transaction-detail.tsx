@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { StyleSheet, View, Text, Pressable, Modal } from 'react-native';
+import { useState } from "react";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/theme';
-import { deleteTransaction } from '@/services/database';
-import { useRouter } from 'expo-router';
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { deleteTransaction } from "@/services/transaction";
+import { useRouter } from "expo-router";
 
 interface TransactionParams {
   id: string;
@@ -21,13 +21,16 @@ interface TransactionDetailProps {
   onDelete?: () => void;
 }
 
-export function TransactionDetail({ transaction, onDelete }: TransactionDetailProps) {
+export function TransactionDetail({
+  transaction,
+  onDelete,
+}: TransactionDetailProps) {
   const router = useRouter();
-  const colorScheme = useColorScheme() ?? 'light';
+  const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const isIngreso = transaction.type === 'ingreso';
+  const isIngreso = transaction.type === "ingreso";
 
   const handleDelete = () => setShowConfirm(true);
 
@@ -42,25 +45,22 @@ export function TransactionDetail({ transaction, onDelete }: TransactionDetailPr
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Tipo y monto */}
       <View style={styles.header}>
-        <Text style={styles.icon}>{isIngreso ? '💰' : '💸'}</Text>
+        <Text style={styles.icon}>{isIngreso ? "💰" : "💸"}</Text>
         <Text
-          style={[
-            styles.amount,
-            { color: isIngreso ? '#4CAF50' : '#F44336' },
-          ]}
+          style={[styles.amount, { color: isIngreso ? "#4CAF50" : "#F44336" }]}
         >
-          {isIngreso ? '+' : '-'}${Number(transaction.amount).toLocaleString()}
+          {isIngreso ? "+" : "-"}${Number(transaction.amount).toLocaleString()}
         </Text>
         <View
           style={[
             styles.badge,
-            { backgroundColor: isIngreso ? '#E8F5E9' : '#FFEBEE' },
+            { backgroundColor: isIngreso ? "#E8F5E9" : "#FFEBEE" },
           ]}
         >
           <Text
             style={[
               styles.badgeText,
-              { color: isIngreso ? '#4CAF50' : '#F44336' },
+              { color: isIngreso ? "#4CAF50" : "#F44336" },
             ]}
           >
             {transaction.type?.toUpperCase()}
@@ -69,11 +69,28 @@ export function TransactionDetail({ transaction, onDelete }: TransactionDetailPr
       </View>
 
       {/* Detalles */}
-      <View style={[styles.card, { backgroundColor: colorScheme === 'dark' ? '#1e1e1e' : '#f5f5f5' }]}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#f5f5f5" },
+        ]}
+      >
         <DetailRow label="Fecha" value={transaction.date} color={colors} />
-        <DetailRow label="Categoría" value={transaction.category} color={colors} />
-        <DetailRow label="Descripción" value={transaction.description} color={colors} />
-        <DetailRow label="Texto original" value={transaction.originalText} color={colors} />
+        <DetailRow
+          label="Categoría"
+          value={transaction.category}
+          color={colors}
+        />
+        <DetailRow
+          label="Descripción"
+          value={transaction.description}
+          color={colors}
+        />
+        <DetailRow
+          label="Texto original"
+          value={transaction.originalText}
+          color={colors}
+        />
       </View>
 
       {/* Acciones */}
@@ -89,8 +106,15 @@ export function TransactionDetail({ transaction, onDelete }: TransactionDetailPr
         onRequestClose={() => setShowConfirm(false)}
       >
         <View style={styles.overlay}>
-          <View style={[styles.dialog, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#fff' }]}>
-            <Text style={[styles.dialogTitle, { color: colors.text }]}>Eliminar</Text>
+          <View
+            style={[
+              styles.dialog,
+              { backgroundColor: colorScheme === "dark" ? "#2c2c2c" : "#fff" },
+            ]}
+          >
+            <Text style={[styles.dialogTitle, { color: colors.text }]}>
+              Eliminar
+            </Text>
             <Text style={[styles.dialogMessage, { color: colors.text }]}>
               ¿Seguro que querés eliminar esta transacción?
             </Text>
@@ -99,13 +123,17 @@ export function TransactionDetail({ transaction, onDelete }: TransactionDetailPr
                 style={[styles.dialogButton, styles.cancelButton]}
                 onPress={() => setShowConfirm(false)}
               >
-                <Text style={[styles.dialogButtonText, { color: colors.text }]}>Cancelar</Text>
+                <Text style={[styles.dialogButtonText, { color: colors.text }]}>
+                  Cancelar
+                </Text>
               </Pressable>
               <Pressable
                 style={[styles.dialogButton, styles.confirmDeleteButton]}
                 onPress={confirmDelete}
               >
-                <Text style={[styles.dialogButtonText, { color: '#fff' }]}>Eliminar</Text>
+                <Text style={[styles.dialogButtonText, { color: "#fff" }]}>
+                  Eliminar
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -128,7 +156,7 @@ function DetailRow({
     <View style={styles.detailRow}>
       <Text style={[styles.detailLabel, { color: color.icon }]}>{label}</Text>
       <Text style={[styles.detailValue, { color: color.text }]}>
-        {value || '—'}
+        {value || "—"}
       </Text>
     </View>
   );
@@ -140,7 +168,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 24,
     gap: 8,
   },
@@ -149,7 +177,7 @@ const styles = StyleSheet.create({
   },
   amount: {
     fontSize: 36,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   badge: {
     paddingHorizontal: 12,
@@ -158,7 +186,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   card: {
     borderRadius: 12,
@@ -170,53 +198,53 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 11,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    textTransform: "uppercase",
   },
   detailValue: {
     fontSize: 15,
   },
   deleteButton: {
     marginTop: 24,
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#FFEBEE',
+    backgroundColor: "#FFEBEE",
   },
   deleteButtonText: {
-    color: '#F44336',
+    color: "#F44336",
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 32,
   },
   dialog: {
-    width: '100%',
+    width: "100%",
     borderRadius: 16,
     padding: 24,
     gap: 12,
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
   },
   dialogTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   dialogMessage: {
     fontSize: 15,
     lineHeight: 22,
   },
   dialogActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "flex-end",
     gap: 12,
     marginTop: 8,
   },
@@ -226,13 +254,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   cancelButton: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   confirmDeleteButton: {
-    backgroundColor: '#F44336',
+    backgroundColor: "#F44336",
   },
   dialogButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

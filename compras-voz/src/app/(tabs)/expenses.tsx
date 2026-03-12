@@ -9,15 +9,18 @@ import {
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { AppHeader } from "@/components/app-header";
 
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { getAccountsWithBalance } from "@/services/account";
 import {
   deleteTransaction,
   getAllTransactions,
-  getAccountsWithBalance,
-  getMonthlySummary
-} from "@/services/database";
+  getMonthlySummary,
+} from "@/services/transaction";
 import type { Account } from "@/types/account";
 import type { Transaction } from "@/types/transaction";
 
@@ -127,126 +130,153 @@ export default function ResumenScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
-      </View>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: colors.background }}
+        edges={["left", "right", "bottom"]}
+      >
+        <AppHeader title="Resumen" />
+        <View style={[styles.center, { backgroundColor: colors.background }]}>
+          <ActivityIndicator size="large" color={colors.tint} />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View
-        style={[
-          styles.summaryCard,
-          { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#f5f5f5" },
-        ]}
-      >
-        <Text style={[styles.summaryTitle, { color: colors.text }]}>
-          Resumen del mes
-        </Text>
-        <View style={styles.summaryRow}>
-          <View style={styles.summaryItem}>
-            <Text style={[styles.summaryLabel, { color: colors.icon }]}>
-              Ingresos
-            </Text>
-            <Text style={[styles.summaryValue, { color: "#4CAF50" }]}>
-              ${summary.totalIngresos.toLocaleString()}
-            </Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Text style={[styles.summaryLabel, { color: colors.icon }]}>
-              Egresos
-            </Text>
-            <Text style={[styles.summaryValue, { color: "#F44336" }]}>
-              ${summary.totalEgresos.toLocaleString()}
-            </Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Text style={[styles.summaryLabel, { color: colors.icon }]}>
-              Balance
-            </Text>
-            <Text
-              style={[
-                styles.summaryValue,
-                { color: summary.balance >= 0 ? "#4CAF50" : "#F44336" },
-              ]}
-            >
-              ${summary.balance.toLocaleString()}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      {accountBalances.length > 0 && (
-        <View style={[styles.summaryCard, { backgroundColor: colorScheme === 'dark' ? '#1e1e1e' : '#f5f5f5' }]}>
-          <Text style={[styles.summaryTitle, { color: colors.text }]}>Cuentas del mes</Text>
-          {accountBalances.map((acc) => (
-            <View key={acc.id} style={styles.accountRow}>
-              <Text style={styles.accountRowIcon}>{acc.type === 'bank' ? '🏦' : '💳'}</Text>
-              <Text style={[styles.accountRowName, { color: colors.text }]}>{acc.name}</Text>
-              <Text
-                style={[
-                  styles.accountRowBalance,
-                  {
-                    color:
-                      acc.type === 'bank'
-                        ? acc.currentBalance >= 0 ? '#4CAF50' : '#F44336'
-                        : '#F44336',
-                  },
-                ]}
-              >
-                {acc.type === 'bank' ? '' : 'Gastado: '}${acc.currentBalance.toLocaleString()}
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      edges={["left", "right", "bottom"]}
+    >
+      <AppHeader title="Resumen" />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View
+          style={[
+            styles.summaryCard,
+            { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#f5f5f5" },
+          ]}
+        >
+          <Text style={[styles.summaryTitle, { color: colors.text }]}>
+            Resumen del mes
+          </Text>
+          <View style={styles.summaryRow}>
+            <View style={styles.summaryItem}>
+              <Text style={[styles.summaryLabel, { color: colors.icon }]}>
+                Ingresos
+              </Text>
+              <Text style={[styles.summaryValue, { color: "#4CAF50" }]}>
+                ${summary.totalIngresos.toLocaleString()}
               </Text>
             </View>
-          ))}
+            <View style={styles.summaryItem}>
+              <Text style={[styles.summaryLabel, { color: colors.icon }]}>
+                Egresos
+              </Text>
+              <Text style={[styles.summaryValue, { color: "#F44336" }]}>
+                ${summary.totalEgresos.toLocaleString()}
+              </Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={[styles.summaryLabel, { color: colors.icon }]}>
+                Balance
+              </Text>
+              <Text
+                style={[
+                  styles.summaryValue,
+                  { color: summary.balance >= 0 ? "#4CAF50" : "#F44336" },
+                ]}
+              >
+                ${summary.balance.toLocaleString()}
+              </Text>
+            </View>
+          </View>
         </View>
-      )}
 
-      {/* Tabla de transacciones */}
-      <View
-        style={[
-          styles.tableHeader,
-          { borderBottomColor: colorScheme === "dark" ? "#333" : "#e0e0e0" },
-        ]}
-      >
-        <Text style={[styles.tableHeaderText, { color: colors.icon }]}>
-          Todas las transacciones ({transactions.length})
-        </Text>
+        {accountBalances.length > 0 && (
+          <View
+            style={[
+              styles.summaryCard,
+              {
+                backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#f5f5f5",
+              },
+            ]}
+          >
+            <Text style={[styles.summaryTitle, { color: colors.text }]}>
+              Cuentas del mes
+            </Text>
+            {accountBalances.map((acc) => (
+              <View key={acc.id} style={styles.accountRow}>
+                <Text style={styles.accountRowIcon}>
+                  {acc.type === "bank" ? "🏦" : "💳"}
+                </Text>
+                <Text style={[styles.accountRowName, { color: colors.text }]}>
+                  {acc.name}
+                </Text>
+                <Text
+                  style={[
+                    styles.accountRowBalance,
+                    {
+                      color:
+                        acc.type === "bank"
+                          ? acc.currentBalance >= 0
+                            ? "#4CAF50"
+                            : "#F44336"
+                          : "#F44336",
+                    },
+                  ]}
+                >
+                  {acc.type === "bank" ? "" : "Gastado: "}$
+                  {acc.currentBalance.toLocaleString()}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Tabla de transacciones */}
+        <View
+          style={[
+            styles.tableHeader,
+            { borderBottomColor: colorScheme === "dark" ? "#333" : "#e0e0e0" },
+          ]}
+        >
+          <Text style={[styles.tableHeaderText, { color: colors.icon }]}>
+            Todas las transacciones ({transactions.length})
+          </Text>
+        </View>
+
+        {transactions.length === 0 ? (
+          <View style={styles.center}>
+            <Text style={{ color: colors.icon, fontSize: 16 }}>
+              No hay transacciones registradas
+            </Text>
+            <Text style={{ color: colors.icon, fontSize: 13, marginTop: 4 }}>
+              Grabá un gasto o ingreso desde Home
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={transactions}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            ItemSeparatorComponent={() => (
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: colorScheme === "dark" ? "#333" : "#eee",
+                }}
+              />
+            )}
+          />
+        )}
       </View>
-
-      {transactions.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={{ color: colors.icon, fontSize: 16 }}>
-            No hay transacciones registradas
-          </Text>
-          <Text style={{ color: colors.icon, fontSize: 13, marginTop: 4 }}>
-            Grabá un gasto o ingreso desde Home
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={transactions}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          ItemSeparatorComponent={() => (
-            <View
-              style={{
-                height: 1,
-                backgroundColor: colorScheme === "dark" ? "#333" : "#eee",
-              }}
-            />
-          )}
-        />
-      )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
   },
   center: {
     flex: 1,
@@ -321,12 +351,14 @@ const styles = StyleSheet.create({
   rowAmount: {
     fontSize: 16,
     fontWeight: "700",
-  },  accountRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  },
+  accountRow: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 6,
     gap: 8,
   },
   accountRowIcon: { fontSize: 18 },
-  accountRowName: { flex: 1, fontSize: 14, fontWeight: '500' },
-  accountRowBalance: { fontSize: 15, fontWeight: '700' },});
+  accountRowName: { flex: 1, fontSize: 14, fontWeight: "500" },
+  accountRowBalance: { fontSize: 15, fontWeight: "700" },
+});

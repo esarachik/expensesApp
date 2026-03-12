@@ -11,9 +11,11 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    View
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import { AppHeader } from "@/components/app-header";
 
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -21,7 +23,7 @@ import {
     deleteAccount,
     getAccountsWithBalance,
     upsertAccount,
-} from "@/services/database";
+} from "@/services/account";
 import type { Account, AccountType } from "@/types/account";
 import { ACCOUNT_TYPE_LABELS } from "@/types/account";
 
@@ -171,19 +173,15 @@ export default function AccountsScreen() {
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: colors.background }}
-      edges={["top", "left", "right"]}
+      edges={["left", "right", "bottom"]}
     >
+      <AppHeader title="Cuentas" />
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        {/* Header */}
+        {/* Subheader: month + add button */}
         <View style={styles.header}>
-          <View>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>
-              Cuentas
-            </Text>
-            <Text style={[styles.headerSub, { color: colors.icon }]}>
-              {yearMonth}
-            </Text>
-          </View>
+          <Text style={[styles.headerSub, { color: colors.icon }]}>
+            {yearMonth}
+          </Text>
           <Pressable style={styles.addButton} onPress={openNew}>
             <Text style={styles.addButtonText}>+ Nueva</Text>
           </Pressable>

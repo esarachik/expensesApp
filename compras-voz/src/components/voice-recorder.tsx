@@ -21,8 +21,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { getAccountsByMonth, insertTransaction } from "../services/database";
+import { getAccountsByMonth } from "../services/account";
 import { parseTransaction } from "../services/openai";
+import { insertTransaction } from "../services/transaction";
 import { transcribeAudio } from "../services/whisper";
 import type { Account } from "../types/account";
 import type { Transaction } from "../types/transaction";
