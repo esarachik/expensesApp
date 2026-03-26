@@ -81,3 +81,7 @@ src/
   types/          # TypeScript interfaces
 drizzle/          # Generated SQL migrations
 ```
+
+##Compile Locally
+\android> .\gradlew assembleRelease
+android app build outputs > apk > release
