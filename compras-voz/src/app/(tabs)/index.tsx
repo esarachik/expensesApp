@@ -1,4 +1,4 @@
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/layout/app-header";
 import VoiceRecorder from "@/components/voice-recorder";
 import { SafeAreaView } from "react-native-safe-area-context";
 

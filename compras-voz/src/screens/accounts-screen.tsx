@@ -1,28 +1,28 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/layout/app-header";
 
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
-    deleteAccount,
-    getAccountsWithBalance,
-    upsertAccount,
+  deleteAccount,
+  getAccountsWithBalance,
+  upsertAccount,
 } from "@/services/account";
 import type { Account, AccountType } from "@/types/account";
 import { ACCOUNT_TYPE_LABELS } from "@/types/account";

@@ -1,35 +1,25 @@
-import { Platform } from 'react-native';
 import { OPENAI_API_KEY, OPENAI_BASE_URL } from '../constants/config';
 
 /**
  * Envía el archivo de audio a OpenAI Whisper y devuelve el texto transcrito.
  */
-export async function transcribeAudio(audioUri: string): Promise<string> {
-  const formData = new FormData();
+export async function transcribeAudio(audioUri: string): Promise<string | null> {
+  const formData = new FormData();    
+  formData.append('file', {
+    uri: audioUri,
+    name: 'recording.m4a',
+    type: 'audio/m4a',
+  } as any);
 
-  if (Platform.OS === 'web') {
-    // En web: convertir el URI (blob: o data:) a un File real
-    const res = await fetch(audioUri);
-    const blob = await res.blob();
-    const file = new File([blob], 'recording.webm', { type: blob.type || 'audio/webm' });
-    formData.append('file', file);
-  } else {
-    // En native (iOS/Android): React Native acepta este formato
-    formData.append('file', {
-      uri: audioUri,
-      name: 'recording.m4a',
-      type: 'audio/m4a',
-    } as any);
-  }
 
   formData.append('model', 'whisper-1');
   formData.append('language', 'es');
+  formData.append('response_format', 'verbose_json');
 
   const response = await fetch(`${OPENAI_BASE_URL}/audio/transcriptions`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-      // No setear Content-Type: fetch lo hace automáticamente con el boundary
+      Authorization: `Bearer ${OPENAI_API_KEY}`,      
     },
     body: formData,
   });
@@ -40,5 +30,14 @@ export async function transcribeAudio(audioUri: string): Promise<string> {
   }
 
   const data = await response.json();
-  return data.text;
+  const text: string = (data.text ?? '').trim();
+    
+  const segments = data.segments ?? [];    
+  const isNoise = segments.length > 0 && segments.every((s: any) => s.no_speech_prob > 0.8);  
+  
+  if (isNoise === true) {
+    return null;
+  }
+  
+  return text;
 }

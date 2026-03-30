@@ -8,7 +8,7 @@ import { getCategoriesByType } from './category';
  */
 export async function parseTransaction(
   transcribedText: string
-): Promise<Omit<Transaction, 'id'>> {
+): Promise<Omit<Transaction, 'id'> | null> {
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
   // Cargar categorias dinamicas desde la DB
@@ -36,8 +36,11 @@ Categorías disponibles para EGRESOS: ${egresoNames.join(', ')}
 
 Usá la categoría que mejor corresponda de las listas anteriores. Si no hay ninguna adecuada usá "${fallbackIngreso}" o "${fallbackEgreso}" según corresponda.
 
-Formato de respuesta:
+Si el texto NO contiene información sobre una transacción financiera (no menciona montos, compras, pagos, cobros, etc.), respondé exactamente: {"valid": false}
+
+Formato de respuesta cuando SÍ es una transacción:
 {
+  "valid": true,
   "date": "YYYY-MM-DD",
   "amount": 0,
   "type": "egreso",
@@ -72,6 +75,10 @@ Formato de respuesta:
   // Limpiar posibles bloques de código markdown
   const cleaned = content.replace(/```json\n?|```\n?/g, '').trim();
   const parsed = JSON.parse(cleaned);
+
+  if (parsed.valid === false) {
+    return null;
+  }
 
   const type: 'ingreso' | 'egreso' = parsed.type === 'ingreso' ? 'ingreso' : 'egreso';
   const allNames = type === 'ingreso' ? ingresoNames : egresoNames;

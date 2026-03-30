@@ -1,25 +1,26 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AppHeader } from "@/components/app-header";
-
+import AccountBalancesList from "@/components/expenses/account-balances-list";
+import MonthlySummaryCard from "@/components/expenses/monthly-summary-card";
+import TransactionTable from "@/components/expenses/transaction-table";
+import { AppHeader } from "@/components/layout/app-header";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { getAccountsWithBalance } from "@/services/account";
 import {
-    deleteTransaction,
-    getAllTransactions,
-    getMonthlySummary,
+  deleteTransaction,
+  getAllTransactions,
+  getMonthlySummary,
 } from "@/services/transaction";
 import type { Account } from "@/types/account";
 import type { Transaction } from "@/types/transaction";
@@ -148,127 +149,17 @@ export default function ResumenScreen() {
       edges={["left", "right", "bottom"]}
     >
       <AppHeader title="Resumen" />
+
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View
-          style={[
-            styles.summaryCard,
-            { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#f5f5f5" },
-          ]}
-        >
-          <Text style={[styles.summaryTitle, { color: colors.text }]}>
-            Resumen del mes
-          </Text>
-          <View style={styles.summaryRow}>
-            <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.icon }]}>
-                Ingresos
-              </Text>
-              <Text style={[styles.summaryValue, { color: "#4CAF50" }]}>
-                ${summary.totalIngresos.toLocaleString()}
-              </Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.icon }]}>
-                Egresos
-              </Text>
-              <Text style={[styles.summaryValue, { color: "#F44336" }]}>
-                ${summary.totalEgresos.toLocaleString()}
-              </Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.icon }]}>
-                Balance
-              </Text>
-              <Text
-                style={[
-                  styles.summaryValue,
-                  { color: summary.balance >= 0 ? "#4CAF50" : "#F44336" },
-                ]}
-              >
-                ${summary.balance.toLocaleString()}
-              </Text>
-            </View>
-          </View>
-        </View>
+        <MonthlySummaryCard
+          totalIngresos={summary.totalIngresos}
+          totalEgresos={summary.totalEgresos}
+          balance={summary.balance}
+        />
 
-        {accountBalances.length > 0 && (
-          <View
-            style={[
-              styles.summaryCard,
-              {
-                backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#f5f5f5",
-              },
-            ]}
-          >
-            <Text style={[styles.summaryTitle, { color: colors.text }]}>
-              Cuentas del mes
-            </Text>
-            {accountBalances.map((acc) => (
-              <View key={acc.id} style={styles.accountRow}>
-                <Text style={styles.accountRowIcon}>
-                  {acc.type === "bank" ? "🏦" : "💳"}
-                </Text>
-                <Text style={[styles.accountRowName, { color: colors.text }]}>
-                  {acc.name}
-                </Text>
-                <Text
-                  style={[
-                    styles.accountRowBalance,
-                    {
-                      color:
-                        acc.type === "bank"
-                          ? acc.currentBalance >= 0
-                            ? "#4CAF50"
-                            : "#F44336"
-                          : "#F44336",
-                    },
-                  ]}
-                >
-                  {acc.type === "bank" ? "" : "Gastado: "}$
-                  {acc.currentBalance.toLocaleString()}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
+        <AccountBalancesList accounts={accountBalances} />
 
-        {/* Tabla de transacciones */}
-        <View
-          style={[
-            styles.tableHeader,
-            { borderBottomColor: colorScheme === "dark" ? "#333" : "#e0e0e0" },
-          ]}
-        >
-          <Text style={[styles.tableHeaderText, { color: colors.icon }]}>
-            Todas las transacciones ({transactions.length})
-          </Text>
-        </View>
-
-        {transactions.length === 0 ? (
-          <View style={styles.center}>
-            <Text style={{ color: colors.icon, fontSize: 16 }}>
-              No hay transacciones registradas
-            </Text>
-            <Text style={{ color: colors.icon, fontSize: 13, marginTop: 4 }}>
-              Grabá un gasto o ingreso desde Home
-            </Text>
-          </View>
-        ) : (
-          <FlatList
-            data={transactions}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            ItemSeparatorComponent={() => (
-              <View
-                style={{
-                  height: 1,
-                  backgroundColor: colorScheme === "dark" ? "#333" : "#eee",
-                }}
-              />
-            )}
-          />
-        )}
+        <TransactionTable transactions={transactions} renderItem={renderItem} />
       </View>
     </SafeAreaView>
   );
@@ -282,33 +173,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  summaryCard: {
-    margin: 16,
-    borderRadius: 12,
-    padding: 16,
-  },
-  summaryTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 12,
-  },
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  summaryItem: {
-    alignItems: "center",
-    flex: 1,
-  },
-  summaryLabel: {
-    fontSize: 12,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  summaryValue: {
-    fontSize: 18,
-    fontWeight: "700",
   },
   tableHeader: {
     paddingHorizontal: 16,
@@ -352,13 +216,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
   },
-  accountRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 6,
-    gap: 8,
-  },
-  accountRowIcon: { fontSize: 18 },
-  accountRowName: { flex: 1, fontSize: 14, fontWeight: "500" },
-  accountRowBalance: { fontSize: 15, fontWeight: "700" },
 });
