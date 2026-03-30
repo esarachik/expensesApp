@@ -1,9 +1,10 @@
 import { getCategoriesByType } from "@/constants/categories";
 import type { Account } from "@/types/account";
-import type { Transaction } from "@/types/transaction";
+import type { Transaction, TransactionType } from "@/types/transaction";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
 import {
   ActivityIndicator,
   Pressable,
@@ -23,6 +24,7 @@ type Props = {
   onShowDatePicker: () => void;
   onSelectAccount: (id: number | null | undefined) => void;
   onSelectCategory: (category: string) => void;
+  onSelectType: (type: TransactionType) => void;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -38,6 +40,7 @@ export function PendingTransactionCard({
   onShowDatePicker,
   onSelectAccount,
   onSelectCategory,
+  onSelectType,
   onConfirm,
   onCancel,
 }: Props) {
@@ -46,62 +49,82 @@ export function PendingTransactionCard({
     <View style={styles.card}>
       <Text style={styles.cardLabel}>Confirmar transacción</Text>
 
-      {transcription && (
-        <Text style={[styles.cardText, { marginBottom: 8 }]}>
-          "{transcription}"
-        </Text>
-      )}
+      {transcription && <Text style={styles.cardText}>"{transcription}"</Text>}
 
-      <Text style={styles.resultLine}>
-        {transaction.type === "ingreso" ? "💰" : "💸"}{" "}
-        <Text
-          style={[
-            styles.badge,
-            transaction.type === "ingreso"
-              ? styles.badgeIngreso
-              : styles.badgeEgreso,
-          ]}
-        >
-          {transaction.type.toUpperCase()}
+      <View style={styles.infoRow}>
+        <Text style={styles.infoLabel}>Monto</Text>
+        <Text style={styles.infoValue}>
+          ${transaction.amount.toLocaleString()}
         </Text>
-      </Text>
-      <Text style={styles.resultLine}>
-        💲 ${transaction.amount.toLocaleString()}
-      </Text>
+      </View>
+      <View style={styles.infoRow}>
+        <Text style={styles.infoLabel}>Descripción</Text>
+        <Text style={styles.infoValue} numberOfLines={2}>
+          {transaction.description}
+        </Text>
+      </View>
+
+      <View style={styles.divider} />
+
+      <View style={styles.typeRow}>
+        <Pressable
+          style={[
+            styles.typeChip,
+            transaction.type === "ingreso" && styles.typeChipIngresoActive,
+          ]}
+          onPress={() => onSelectType("ingreso")}
+        >
+          <Text
+            style={[
+              styles.typeChipText,
+              transaction.type === "ingreso" &&
+                styles.typeChipIngresoTextActive,
+            ]}
+          >
+            💰 Ingreso
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.typeChip,
+            transaction.type === "egreso" && styles.typeChipEgresoActive,
+          ]}
+          onPress={() => onSelectType("egreso")}
+        >
+          <Text
+            style={[
+              styles.typeChipText,
+              transaction.type === "egreso" && styles.typeChipEgresoTextActive,
+            ]}
+          >
+            💸 Egreso
+          </Text>
+        </Pressable>
+      </View>
       <View style={styles.categorySection}>
-        <Text style={styles.categoryLabel}>📁 Categoría</Text>
-        <View style={styles.categoryChips}>
-          {categories.map((cat) => (
-            <Pressable
-              key={cat}
-              style={[
-                styles.categoryChip,
-                transaction.category === cat && styles.categoryChipActive,
-              ]}
-              onPress={() => onSelectCategory(cat)}
-            >
-              <Text
-                style={[
-                  styles.categoryChipText,
-                  transaction.category === cat && styles.categoryChipTextActive,
-                ]}
-              >
-                {cat}
-              </Text>
-            </Pressable>
-          ))}
+        <Text style={styles.sectionLabel}>📁 Categoría</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={transaction.category}
+            onValueChange={(val) => onSelectCategory(val)}
+            style={styles.picker}
+            dropdownIconColor="#999"
+          >
+            {categories.map((cat) => (
+              <Picker.Item key={cat} label={cat} value={cat} />
+            ))}
+          </Picker>
         </View>
       </View>
-      <Text style={styles.resultLine}>📝 {transaction.description}</Text>
 
       <Pressable style={styles.dateButton} onPress={onShowDatePicker}>
-        <Text style={styles.dateButtonText}>📅 {transaction.date}</Text>
-        <Text style={styles.dateButtonHint}>Toca para cambiar</Text>
+        <Text style={styles.sectionLabel}>📅 Fecha</Text>
+        <Text style={styles.dateButtonValue}>{transaction.date}</Text>
       </Pressable>
 
       {availableAccounts.length > 0 && (
         <View style={styles.accountSection}>
-          <Text style={styles.accountLabel}>Cuenta</Text>
+          <Text style={styles.sectionLabel}>🏦 Cuenta</Text>
           <View style={styles.accountChips}>
             <Pressable
               style={[
@@ -182,61 +205,106 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     width: "100%",
-    gap: 6,
+    gap: 10,
   },
   cardLabel: {
     fontSize: 12,
     fontWeight: "700",
     color: "#999",
     textTransform: "uppercase",
-    marginBottom: 4,
   },
   cardText: {
-    fontSize: 15,
-    color: "#333",
+    fontSize: 14,
+    color: "#888",
     fontStyle: "italic",
   },
-  resultLine: {
-    fontSize: 16,
-    color: "#333",
+  typeRow: {
+    flexDirection: "row",
+    gap: 10,
   },
-  badge: {
-    fontWeight: "700",
-    fontSize: 14,
-  },
-  badgeIngreso: {
-    color: "#4CAF50",
-  },
-  badgeEgreso: {
-    color: "#F44336",
-  },
-  dateButton: {
-    backgroundColor: "#e3f2fd",
+  typeChip: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: "#ddd",
     borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
+    paddingVertical: 8,
     alignItems: "center",
   },
-  dateButtonText: {
-    fontSize: 16,
+  typeChipIngresoActive: {
+    borderColor: "#4CAF50",
+    backgroundColor: "#E8F5E9",
+  },
+  typeChipEgresoActive: {
+    borderColor: "#F44336",
+    backgroundColor: "#FFEBEE",
+  },
+  typeChipText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#bbb",
+  },
+  typeChipIngresoTextActive: {
+    color: "#2E7D32",
+  },
+  typeChipEgresoTextActive: {
+    color: "#C62828",
+  },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  infoLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#aaa",
+    textTransform: "uppercase",
+  },
+  infoValue: {
+    fontSize: 15,
+    color: "#333",
+    fontWeight: "500",
+    flexShrink: 1,
+    textAlign: "right",
+    marginLeft: 12,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#e0e0e0",
+    marginVertical: 2,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#aaa",
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  categorySection: {},
+  pickerWrapper: {
+    borderWidth: 1.5,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+  },
+  picker: {
+    width: "100%",
+  },
+  dateButton: {
+    backgroundColor: "#fff",
+    borderWidth: 1.5,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  dateButtonValue: {
+    fontSize: 15,
     fontWeight: "600",
     color: "#1976D2",
   },
-  dateButtonHint: {
-    fontSize: 11,
-    color: "#90A4AE",
-    marginTop: 2,
-  },
-  accountSection: {
-    marginTop: 8,
-  },
-  accountLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#999",
-    textTransform: "uppercase",
-    marginBottom: 8,
-  },
+  accountSection: {},
   accountChips: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -262,45 +330,10 @@ const styles = StyleSheet.create({
     color: "#1976D2",
     fontWeight: "700",
   },
-  categorySection: {
-    marginTop: 4,
-  },
-  categoryLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#999",
-    textTransform: "uppercase",
-    marginBottom: 6,
-  },
-  categoryChips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  categoryChip: {
-    borderWidth: 1.5,
-    borderColor: "#ddd",
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-  },
-  categoryChipActive: {
-    borderColor: "#FF9800",
-    backgroundColor: "#FFF3E0",
-  },
-  categoryChipText: {
-    fontSize: 13,
-    color: "#666",
-    fontWeight: "500",
-  },
-  categoryChipTextActive: {
-    color: "#E65100",
-    fontWeight: "700",
-  },
   confirmRow: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 12,
+    marginTop: 4,
   },
   confirmButton: {
     flex: 1,

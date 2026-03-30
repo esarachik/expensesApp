@@ -1,6 +1,7 @@
 import { PendingTransactionCard } from "@/components/voice-recorder/pending-transaction-card";
 import { RecordControls } from "@/components/voice-recorder/record-controls";
 import { ResultCard } from "@/components/voice-recorder/result-card";
+import { getCategoriesByType } from "@/constants/categories";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -67,6 +68,14 @@ export default function VoiceRecorder() {
           onSelectCategory={(category) =>
             setPendingTransaction({ ...pendingTransaction, category })
           }
+          onSelectType={(type) => {
+            const firstCategory = getCategoriesByType(type)[0];
+            setPendingTransaction({
+              ...pendingTransaction,
+              type,
+              category: firstCategory,
+            });
+          }}
           onConfirm={onConfirm}
           onCancel={onCancel}
         />

@@ -33,8 +33,16 @@ export default function CategoriesScreen() {
     setLoading(true);
     try {
       const all = await getAllCategories();
-      setIngresos(all.filter((c) => c.type === "ingreso"));
-      setEgresos(all.filter((c) => c.type === "egreso"));
+      setIngresos(
+        all
+          .filter((c) => c.type === "ingreso")
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      );
+      setEgresos(
+        all
+          .filter((c) => c.type === "egreso")
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      );
     } catch (e: any) {
       console.error("Error cargando categorías:", e);
     } finally {
