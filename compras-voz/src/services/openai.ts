@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { OPENAI_API_KEY, OPENAI_BASE_URL } from '../constants/config';
 import type { Transaction } from '../types/transaction';
 import { getCategoriesByType } from './category';
@@ -9,7 +10,7 @@ import { getCategoriesByType } from './category';
 export async function parseTransaction(
   transcribedText: string
 ): Promise<Omit<Transaction, 'id'> | null> {
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const today = dayjs().format('YYYY-MM-DD'); // YYYY-MM-DD local
 
   // Cargar categorias dinamicas desde la DB
   const [ingresos, egresos] = await Promise.all([
@@ -22,32 +23,32 @@ export async function parseTransaction(
   const fallbackIngreso = ingresoNames.includes('otros ingresos') ? 'otros ingresos' : (ingresoNames[ingresoNames.length - 1] ?? 'otros ingresos');
   const fallbackEgreso = egresoNames.includes('otros egresos') ? 'otros egresos' : (egresoNames[egresoNames.length - 1] ?? 'otros egresos');
 
-  const systemPrompt = `Sos un asistente que extrae datos de transacciones financieras (ingresos y egresos) a partir de texto hablado.
-
-Reglas:
-- Si el usuario dice "compré", "gasté", "pagué" o similar → tipo: "egreso"
-- Si el usuario dice "cobré", "me pagaron", "recibí", "ingreso" o similar → tipo: "ingreso"
-- Si no se menciona fecha, usá la fecha de hoy: ${today}
-- El monto siempre debe ser un número positivo
-- Respondé SOLO con JSON válido, sin texto adicional ni markdown
-
-Categorías disponibles para INGRESOS: ${ingresoNames.join(', ')}
-Categorías disponibles para EGRESOS: ${egresoNames.join(', ')}
-
-Usá la categoría que mejor corresponda de las listas anteriores. Si no hay ninguna adecuada usá "${fallbackIngreso}" o "${fallbackEgreso}" según corresponda.
-
-Si el texto NO contiene información sobre una transacción financiera (no menciona montos, compras, pagos, cobros, etc.), respondé exactamente: {"valid": false}
-
-Formato de respuesta cuando SÍ es una transacción:
-{
-  "valid": true,
-  "date": "YYYY-MM-DD",
-  "amount": 0,
-  "type": "egreso",
-  "category": "",
-  "description": ""
-}`;
-
+  const systemPrompt = 
+  `Sos un asistente que extrae datos de transacciones financieras (ingresos y egresos) a partir de texto hablado.
+    Reglas:
+    - Si el usuario dice "compré", "gasté", "pagué" o similar → tipo: "egreso"
+    - Si el usuario dice "cobré", "me pagaron", "recibí", "ingreso" o similar → tipo: "ingreso"
+    - Si no se menciona fecha, usá la fecha de hoy: ${today}
+    - El monto siempre debe ser un número positivo
+    - Respondé SOLO con JSON válido, sin texto adicional ni markdown
+    
+    Categorías disponibles para INGRESOS: ${ingresoNames.join(', ')}
+    Categorías disponibles para EGRESOS: ${egresoNames.join(', ')}
+    
+    Usá la categoría que mejor corresponda de las listas anteriores. Si no hay ninguna adecuada usá "${fallbackIngreso}" o "${fallbackEgreso}" según corresponda.
+    
+    Si el texto NO contiene información sobre una transacción financiera (no menciona montos, compras, pagos, cobros, etc.), respondé exactamente: {"valid": false}
+    
+    Formato de respuesta cuando SÍ es una transacción:
+    {
+      "valid": true,
+      "date": "YYYY-MM-DD",
+      "amount": 0,
+      "type": "egreso",
+      "category": "",
+      "description": ""
+    }`;
+    
   const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {

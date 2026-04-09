@@ -1,4 +1,3 @@
-import type { TransactionType } from '@/types/transaction';
 
 export const CATEGORIES_INGRESO = [
   'salario',
@@ -37,7 +36,3 @@ export const CATEGORIES_EGRESO = [
 
 export type CategoryIngreso = (typeof CATEGORIES_INGRESO)[number];
 export type CategoryEgreso = (typeof CATEGORIES_EGRESO)[number];
-
-export function getCategoriesByType(type: TransactionType): readonly string[] {
-  return type === 'ingreso' ? CATEGORIES_INGRESO : CATEGORIES_EGRESO;
-}

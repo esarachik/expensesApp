@@ -1,18 +1,20 @@
 import { getAccountsByMonth } from "@/services/account";
+import { getCategoriesByType } from "@/services/category";
 import { parseTransaction } from "@/services/openai";
 import { insertTransaction } from "@/services/transaction";
 import { transcribeAudio } from "@/services/whisper";
 import type { Account } from "@/types/account";
-import type { Transaction } from "@/types/transaction";
+import type { Transaction, TransactionType } from "@/types/transaction";
 import type { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import dayjs from "dayjs";
 import {
-    AudioModule,
-    RecordingPresets,
-    setAudioModeAsync,
-    useAudioPlayer,
-    useAudioPlayerStatus,
-    useAudioRecorder,
-    useAudioRecorderState,
+  AudioModule,
+  RecordingPresets,
+  setAudioModeAsync,
+  useAudioPlayer,
+  useAudioPlayerStatus,
+  useAudioRecorder,
+  useAudioRecorderState,
 } from "expo-audio";
 import { useEffect, useState } from "react";
 import { Alert, Platform } from "react-native";
@@ -114,6 +116,13 @@ export function useVoiceRecorder() {
     }
   };
 
+  const onSelectType = async (type: TransactionType) => {
+    if (!pendingTransaction) return;
+    const cats = await getCategoriesByType(type);
+    const firstCategory = cats[0]?.name ?? "";
+    setPendingTransaction({ ...pendingTransaction, type, category: firstCategory });
+  };
+
   const onDateChange = (_event: DateTimePickerEvent, date?: Date) => {
     setShowDatePicker(Platform.OS === "ios");
     if (date && pendingTransaction) {
@@ -158,8 +167,8 @@ export function useVoiceRecorder() {
     console.log("Transacción cancelada");
   };
 
-  const onTestTransaction = () => {
-    const today = new Date().toISOString().split("T")[0];
+  const onTestTransaction = () => {    
+    const today = dayjs().format('YYYY-MM-DD');    
     const yearMonth = today.substring(0, 7);
     const mock: Transaction = {
       date: today,
@@ -202,6 +211,7 @@ export function useVoiceRecorder() {
     availableAccounts,
     playerStatus,
     onRecord,
+    onSelectType,
     onDateChange,
     onConfirm,
     onCancel,

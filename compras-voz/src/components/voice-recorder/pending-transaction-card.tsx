@@ -1,20 +1,12 @@
-import { getCategoriesByType } from "@/constants/categories";
-import type { Account } from "@/types/account";
-import type { Transaction, TransactionType } from "@/types/transaction";
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
+import { getCategoriesByType } from "@/services/category";
+import { Account } from "@/types/account";
+import { Transaction, TransactionType } from "@/types/transaction";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-type Props = {
+interface Props {
   transaction: Transaction;
   transcription: string | null;
   selectedDate: Date;
@@ -26,11 +18,11 @@ type Props = {
   onSelectAccount: (id: number | null | undefined) => void;
   onSelectCategory: (category: string) => void;
   onSelectType: (type: TransactionType) => void;
-  onChangeAmount: (amount: number) => void;
+  onChangeAmount: (amount: string) => void;
   onChangeDescription: (description: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
-};
+}
 
 export function PendingTransactionCard({
   transaction,
@@ -49,24 +41,34 @@ export function PendingTransactionCard({
   onConfirm,
   onCancel,
 }: Props) {
-  const categories = getCategoriesByType(transaction.type);
+  const [amountText, setAmountText] = useState(String(transaction.amount));
+  const [categoryNames, setCategoryNames] = useState<string[]>([]);
+
+  useEffect(() => {
+    getCategoriesByType(transaction.type)
+      .then((cats) => setCategoryNames(cats.map((c) => c.name)))
+      .catch(() => {});
+  }, [transaction.type]);
   return (
     <>
       <Text style={styles.cardLabel}>Confirmar transacción</Text>
       <View style={styles.card}>
-        {transcription && (
-          <Text style={styles.cardText}>"{transcription}"</Text>
-        )}
+        {transcription && <Text style={styles.cardText}>"{transcription}"</Text>}
+
+        <Pressable style={styles.field} onPress={onShowDatePicker}>
+          <Text style={styles.sectionLabel}>📅 Fecha</Text>
+          <Text style={styles.fieldValue}>{transaction.date}</Text>
+        </Pressable>
 
         <View style={styles.infoRow}>
           <View style={styles.field}>
             <Text style={styles.sectionLabel}>💲 Monto</Text>
             <TextInput
               style={styles.fieldInput}
-              value={String(transaction.amount)}
+              value={amountText}
               onChangeText={(t) => {
-                const n = parseFloat(t.replace(",", "."));
-                if (!isNaN(n)) onChangeAmount(n);
+                setAmountText(t);
+                onChangeAmount(t);
               }}
               keyboardType="numeric"
               selectTextOnFocus
@@ -76,110 +78,51 @@ export function PendingTransactionCard({
         <View style={styles.infoRow}>
           <View style={styles.field}>
             <Text style={styles.sectionLabel}>📝 Descripción</Text>
-            <TextInput
-              style={styles.fieldInput}
-              value={transaction.description}
-              onChangeText={onChangeDescription}
-            />
+            <TextInput style={styles.fieldInput} value={transaction.description} onChangeText={onChangeDescription} />
           </View>
         </View>
 
-        <View style={styles.divider} />
-
         <View style={styles.typeRow}>
           <Pressable
-            style={[
-              styles.typeChip,
-              transaction.type === "ingreso" && styles.typeChipIngresoActive,
-            ]}
+            style={[styles.typeChip, transaction.type === "ingreso" && styles.typeChipIngresoActive]}
             onPress={() => onSelectType("ingreso")}
           >
-            <Text
-              style={[
-                styles.typeChipText,
-                transaction.type === "ingreso" &&
-                  styles.typeChipIngresoTextActive,
-              ]}
-            >
-              💰 Ingreso
-            </Text>
+            <Text style={[styles.typeChipText, transaction.type === "ingreso" && styles.typeChipIngresoTextActive]}>💰 Ingreso</Text>
           </Pressable>
-          <Pressable
-            style={[
-              styles.typeChip,
-              transaction.type === "egreso" && styles.typeChipEgresoActive,
-            ]}
-            onPress={() => onSelectType("egreso")}
-          >
-            <Text
-              style={[
-                styles.typeChipText,
-                transaction.type === "egreso" &&
-                  styles.typeChipEgresoTextActive,
-              ]}
-            >
-              💸 Egreso
-            </Text>
+          <Pressable style={[styles.typeChip, transaction.type === "egreso" && styles.typeChipEgresoActive]} onPress={() => onSelectType("egreso")}>
+            <Text style={[styles.typeChipText, transaction.type === "egreso" && styles.typeChipEgresoTextActive]}>💸 Egreso</Text>
           </Pressable>
         </View>
         <View style={styles.categorySection}>
-          <Text style={styles.sectionLabel}>📁 Categoría</Text>
           <View style={styles.field}>
+            <Text style={styles.sectionLabel}>📁 Categoría</Text>
             <Picker
               selectedValue={transaction.category}
               onValueChange={(val) => onSelectCategory(val)}
               style={styles.picker}
               dropdownIconColor="#999"
             >
-              {categories.map((cat) => (
+              {categoryNames.map((cat) => (
                 <Picker.Item key={cat} label={cat} value={cat} />
               ))}
             </Picker>
           </View>
         </View>
 
-        <Pressable style={styles.field} onPress={onShowDatePicker}>
-          <Text style={styles.sectionLabel}>📅 Fecha</Text>
-          <Text style={styles.fieldValue}>{transaction.date}</Text>
-        </Pressable>
-
         {availableAccounts.length > 0 && (
           <View style={styles.accountSection}>
             <Text style={styles.sectionLabel}>🏦 Cuenta</Text>
             <View style={styles.accountChips}>
-              <Pressable
-                style={[
-                  styles.accountChip,
-                  !transaction.accountId && styles.accountChipActive,
-                ]}
-                onPress={() => onSelectAccount(null)}
-              >
-                <Text
-                  style={[
-                    styles.accountChipText,
-                    !transaction.accountId && styles.accountChipTextActive,
-                  ]}
-                >
-                  Sin cuenta
-                </Text>
+              <Pressable style={[styles.accountChip, !transaction.accountId && styles.accountChipActive]} onPress={() => onSelectAccount(null)}>
+                <Text style={[styles.accountChipText, !transaction.accountId && styles.accountChipTextActive]}>Sin cuenta</Text>
               </Pressable>
               {availableAccounts.map((acc) => (
                 <Pressable
                   key={acc.id}
-                  style={[
-                    styles.accountChip,
-                    transaction.accountId === acc.id &&
-                      styles.accountChipActive,
-                  ]}
+                  style={[styles.accountChip, transaction.accountId === acc.id && styles.accountChipActive]}
                   onPress={() => onSelectAccount(acc.id)}
                 >
-                  <Text
-                    style={[
-                      styles.accountChipText,
-                      transaction.accountId === acc.id &&
-                        styles.accountChipTextActive,
-                    ]}
-                  >
+                  <Text style={[styles.accountChipText, transaction.accountId === acc.id && styles.accountChipTextActive]}>
                     {acc.type === "bank" ? "🏦" : "💳"} {acc.name}
                   </Text>
                 </Pressable>
@@ -188,33 +131,14 @@ export function PendingTransactionCard({
           </View>
         )}
 
-        {showDatePicker && (
-          <DateTimePicker
-            value={selectedDate}
-            mode="date"
-            display="default"
-            onChange={onDateChange}
-          />
-        )}
+        {showDatePicker && <DateTimePicker value={selectedDate} mode="date" display="default" onChange={onDateChange} />}
 
         <View style={styles.confirmRow}>
-          <Pressable
-            style={styles.cancelButton}
-            onPress={onCancel}
-            disabled={saving}
-          >
+          <Pressable style={styles.cancelButton} onPress={onCancel} disabled={saving}>
             <Text style={styles.cancelButtonText}>❌ Cancelar</Text>
           </Pressable>
-          <Pressable
-            style={styles.confirmButton}
-            onPress={onConfirm}
-            disabled={saving}
-          >
-            {saving ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <Text style={styles.confirmButtonText}>✅ Guardar</Text>
-            )}
+          <Pressable style={styles.confirmButton} onPress={onConfirm} disabled={saving}>
+            {saving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.confirmButtonText}>✅ Guardar</Text>}
           </Pressable>
         </View>
       </View>

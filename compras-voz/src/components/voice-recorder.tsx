@@ -1,7 +1,6 @@
 import { PendingTransactionCard } from "@/components/voice-recorder/pending-transaction-card";
 import { RecordControls } from "@/components/voice-recorder/record-controls";
 import { ResultCard } from "@/components/voice-recorder/result-card";
-import { getCategoriesByType } from "@/constants/categories";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 import { Modal, ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -21,6 +20,7 @@ export default function VoiceRecorder() {
     availableAccounts,
     playerStatus,
     onRecord,
+    onSelectType,
     onDateChange,
     onConfirm,
     onCancel,
@@ -50,18 +50,10 @@ export default function VoiceRecorder() {
 
       {result && <ResultCard transaction={result} />}
 
-      <Modal
-        visible={!!pendingTransaction}
-        animationType="slide"
-        transparent
-        onRequestClose={onCancel}
-      >
+      <Modal visible={!!pendingTransaction} animationType="slide" transparent onRequestClose={onCancel}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalSheet}>
-            <ScrollView
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
               {pendingTransaction && (
                 <PendingTransactionCard
                   transaction={pendingTransaction}
@@ -78,20 +70,16 @@ export default function VoiceRecorder() {
                       accountId: id,
                     })
                   }
-                  onSelectCategory={(category) =>
-                    setPendingTransaction({ ...pendingTransaction, category })
-                  }
-                  onSelectType={(type) => {
-                    const firstCategory = getCategoriesByType(type)[0];
-                    setPendingTransaction({
-                      ...pendingTransaction,
-                      type,
-                      category: firstCategory,
-                    });
+                  onSelectCategory={(category) => setPendingTransaction({ ...pendingTransaction, category })}
+                  onSelectType={onSelectType}
+                  onChangeAmount={(raw) => {
+                    const n = parseFloat(raw.replace(",", "."));
+                    if (!isNaN(n))
+                      setPendingTransaction({
+                        ...pendingTransaction,
+                        amount: n,
+                      });
                   }}
-                  onChangeAmount={(amount) =>
-                    setPendingTransaction({ ...pendingTransaction, amount })
-                  }
                   onChangeDescription={(description) =>
                     setPendingTransaction({
                       ...pendingTransaction,
