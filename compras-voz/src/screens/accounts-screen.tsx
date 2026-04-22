@@ -17,15 +17,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppHeader } from "@/components/layout/app-header";
 
+import MonthPicker, { formatYearMonth } from "@/components/shared/month-picker";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import {
-  deleteAccount,
-  getAccountsWithBalance,
-  upsertAccount,
-} from "@/services/account";
-import type { Account, AccountType } from "@/types/account";
-import { ACCOUNT_TYPE_LABELS } from "@/types/account";
+import { deleteAccount, getAccountsWithBalance, getAvailableAccountMonths, upsertAccount } from "@/services/account";
+import type { Account, AccountType, Currency } from "@/types/account";
+import { ACCOUNT_TYPE_LABELS, CURRENCY_LABELS, CURRENCY_SYMBOLS } from "@/types/account";
 
 const currentYearMonth = () => {
   const now = new Date();
@@ -37,6 +34,7 @@ type AccountWithBalance = Account & { currentBalance: number };
 const EMPTY_FORM: Omit<Account, "id"> = {
   name: "",
   type: "bank",
+  currency: "UYU",
   initialBalance: 0,
   month: currentYearMonth(),
 };
@@ -46,26 +44,26 @@ export default function AccountsScreen() {
   const colors = Colors[colorScheme];
 
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState(currentYearMonth());
+  const [availableMonths, setAvailableMonths] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<Omit<Account, "id"> & { id?: number }>(
-    EMPTY_FORM,
-  );
-
-  const yearMonth = currentYearMonth();
+  const [form, setForm] = useState<Omit<Account, "id"> & { id?: number }>(EMPTY_FORM);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getAccountsWithBalance(yearMonth);
+      const [data, months] = await Promise.all([getAccountsWithBalance(selectedMonth), getAvailableAccountMonths()]);
+      const normalizedMonths = months.includes(selectedMonth) ? months : [selectedMonth, ...months];
       setAccounts(data);
+      setAvailableMonths(normalizedMonths);
     } catch (e: any) {
       console.error("Error cargando cuentas:", e);
     } finally {
       setLoading(false);
     }
-  }, [yearMonth]);
+  }, [selectedMonth]);
 
   useFocusEffect(
     useCallback(() => {
@@ -74,7 +72,7 @@ export default function AccountsScreen() {
   );
 
   const openNew = () => {
-    setForm({ ...EMPTY_FORM, month: yearMonth });
+    setForm({ ...EMPTY_FORM, month: selectedMonth });
     setModalVisible(true);
   };
 
@@ -83,6 +81,7 @@ export default function AccountsScreen() {
       id: acc.id,
       name: acc.name,
       type: acc.type,
+      currency: acc.currency,
       initialBalance: acc.initialBalance,
       month: acc.month,
     });
@@ -124,46 +123,37 @@ export default function AccountsScreen() {
     const isBank = item.type === "bank";
     return (
       <Pressable
-        style={[
-          styles.card,
-          { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#fff" },
-        ]}
+        style={[styles.card, { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#fff" }]}
         onPress={() => openEdit(item)}
         onLongPress={() => onDelete(item)}
       >
         <View style={styles.cardHeader}>
           <Text style={styles.cardIcon}>{isBank ? "🏦" : "💳"}</Text>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.cardName, { color: colors.text }]}>
-              {item.name}
-            </Text>
+            <Text style={[styles.cardName, { color: colors.text }]}>{item.name}</Text>
             <Text style={[styles.cardType, { color: colors.icon }]}>
-              {ACCOUNT_TYPE_LABELS[item.type]}
+              {ACCOUNT_TYPE_LABELS[item.type]} · {item.currency}
             </Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={[styles.cardLabel, { color: colors.icon }]}>
-              {isBank ? "Saldo actual" : "Gastado este mes"}
-            </Text>
+            <Text style={[styles.cardLabel, { color: colors.icon }]}>{isBank ? "Saldo actual" : "Gastado este mes"}</Text>
             <Text
               style={[
                 styles.cardBalance,
                 {
-                  color: isBank
-                    ? item.currentBalance >= 0
-                      ? "#4CAF50"
-                      : "#F44336"
-                    : "#F44336",
+                  color: isBank ? (item.currentBalance >= 0 ? "#4CAF50" : "#F44336") : "#F44336",
                 },
               ]}
             >
-              ${item.currentBalance.toLocaleString()}
+              {CURRENCY_SYMBOLS[item.currency]}
+              {item.currentBalance.toLocaleString()}
             </Text>
           </View>
         </View>
         {isBank && (
           <Text style={[styles.cardInitial, { color: colors.icon }]}>
-            Saldo inicial: ${item.initialBalance.toLocaleString()}
+            Saldo inicial: {CURRENCY_SYMBOLS[item.currency]}
+            {item.initialBalance.toLocaleString()}
           </Text>
         )}
       </Pressable>
@@ -171,36 +161,24 @@ export default function AccountsScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      edges={["left", "right", "bottom"]}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right", "bottom"]}>
       <AppHeader title="Cuentas" />
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Subheader: month + add button */}
         <View style={styles.header}>
-          <Text style={[styles.headerSub, { color: colors.icon }]}>
-            {yearMonth}
-          </Text>
+          <MonthPicker yearMonth={selectedMonth} availableMonths={availableMonths} onMonthChange={setSelectedMonth} maxVisibleMonths={12} />
+
           <Pressable style={styles.addButton} onPress={openNew}>
             <Text style={styles.addButtonText}>+ Nueva</Text>
           </Pressable>
         </View>
 
         {loading ? (
-          <ActivityIndicator
-            size="large"
-            color={colors.tint}
-            style={{ marginTop: 40 }}
-          />
+          <ActivityIndicator size="large" color={colors.tint} style={{ marginTop: 40 }} />
         ) : accounts.length === 0 ? (
           <View style={styles.empty}>
-            <Text style={{ color: colors.icon, fontSize: 16 }}>
-              Sin cuentas para este mes
-            </Text>
-            <Text style={{ color: colors.icon, fontSize: 13, marginTop: 4 }}>
-              Tocá "+ Nueva" para agregar una cuenta o tarjeta
-            </Text>
+            <Text style={{ color: colors.icon, fontSize: 16 }}>Sin cuentas para {formatYearMonth(selectedMonth)}</Text>
+            <Text style={{ color: colors.icon, fontSize: 13, marginTop: 4 }}>Tocá "+ Nueva" para agregar una cuenta o tarjeta</Text>
           </View>
         ) : (
           <FlatList
@@ -212,16 +190,8 @@ export default function AccountsScreen() {
         )}
 
         {/* Modal alta/edición */}
-        <Modal
-          visible={modalVisible}
-          animationType="slide"
-          transparent
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <KeyboardAvoidingView
-            style={styles.modalOverlay}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-          >
+        <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
+          <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
             <View
               style={[
                 styles.modalSheet,
@@ -230,13 +200,9 @@ export default function AccountsScreen() {
                 },
               ]}
             >
-              <Text style={[styles.modalTitle, { color: colors.text }]}>
-                {form.id ? "Editar cuenta" : "Nueva cuenta"}
-              </Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>{form.id ? "Editar cuenta" : "Nueva cuenta"}</Text>
 
-              <Text style={[styles.fieldLabel, { color: colors.icon }]}>
-                Nombre
-              </Text>
+              <Text style={[styles.fieldLabel, { color: colors.icon }]}>Nombre</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -251,9 +217,7 @@ export default function AccountsScreen() {
                 onChangeText={(v) => setForm((f) => ({ ...f, name: v }))}
               />
 
-              <Text style={[styles.fieldLabel, { color: colors.icon }]}>
-                Tipo
-              </Text>
+              <Text style={[styles.fieldLabel, { color: colors.icon }]}>Tipo</Text>
               <View style={styles.typeRow}>
                 {(["bank", "credit_card"] as AccountType[]).map((t) => (
                   <Pressable
@@ -262,32 +226,37 @@ export default function AccountsScreen() {
                       styles.typeButton,
                       form.type === t && styles.typeButtonActive,
                       {
-                        borderColor:
-                          form.type === t
-                            ? "#2196F3"
-                            : colorScheme === "dark"
-                              ? "#444"
-                              : "#ddd",
+                        borderColor: form.type === t ? "#2196F3" : colorScheme === "dark" ? "#444" : "#ddd",
                       },
                     ]}
                     onPress={() => setForm((f) => ({ ...f, type: t }))}
                   >
-                    <Text
-                      style={[
-                        styles.typeButtonText,
-                        form.type === t && { color: "#2196F3" },
-                      ]}
-                    >
-                      {ACCOUNT_TYPE_LABELS[t]}
-                    </Text>
+                    <Text style={[styles.typeButtonText, form.type === t && { color: "#2196F3" }]}>{ACCOUNT_TYPE_LABELS[t]}</Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text style={[styles.fieldLabel, { color: colors.icon }]}>Moneda</Text>
+              <View style={styles.typeRow}>
+                {(["UYU", "USD"] as Currency[]).map((c) => (
+                  <Pressable
+                    key={c}
+                    style={[
+                      styles.typeButton,
+                      form.currency === c && styles.typeButtonActive,
+                      {
+                        borderColor: form.currency === c ? "#2196F3" : colorScheme === "dark" ? "#444" : "#ddd",
+                      },
+                    ]}
+                    onPress={() => setForm((f) => ({ ...f, currency: c }))}
+                  >
+                    <Text style={[styles.typeButtonText, form.currency === c && { color: "#2196F3" }]}>{CURRENCY_LABELS[c]}</Text>
                   </Pressable>
                 ))}
               </View>
 
               <Text style={[styles.fieldLabel, { color: colors.icon }]}>
-                {form.type === "bank"
-                  ? "Saldo inicial del mes"
-                  : "Deuda inicial del mes"}
+                {form.type === "bank" ? "Saldo inicial del mes" : "Deuda inicial del mes"}
               </Text>
               <TextInput
                 style={[
@@ -300,32 +269,16 @@ export default function AccountsScreen() {
                 placeholder="0"
                 placeholderTextColor={colors.icon}
                 keyboardType="numeric"
-                value={
-                  form.initialBalance === 0 ? "" : String(form.initialBalance)
-                }
-                onChangeText={(v) =>
-                  setForm((f) => ({ ...f, initialBalance: Number(v) || 0 }))
-                }
+                value={form.initialBalance === 0 ? "" : String(form.initialBalance)}
+                onChangeText={(v) => setForm((f) => ({ ...f, initialBalance: Number(v) || 0 }))}
               />
 
               <View style={styles.modalButtons}>
-                <Pressable
-                  style={styles.cancelBtn}
-                  onPress={() => setModalVisible(false)}
-                  disabled={saving}
-                >
+                <Pressable style={styles.cancelBtn} onPress={() => setModalVisible(false)} disabled={saving}>
                   <Text style={styles.cancelBtnText}>Cancelar</Text>
                 </Pressable>
-                <Pressable
-                  style={styles.saveBtn}
-                  onPress={onSave}
-                  disabled={saving}
-                >
-                  {saving ? (
-                    <ActivityIndicator color="#fff" size="small" />
-                  ) : (
-                    <Text style={styles.saveBtnText}>Guardar</Text>
-                  )}
+                <Pressable style={styles.saveBtn} onPress={onSave} disabled={saving}>
+                  {saving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.saveBtnText}>Guardar</Text>}
                 </Pressable>
               </View>
             </View>

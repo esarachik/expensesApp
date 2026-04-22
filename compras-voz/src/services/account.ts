@@ -1,4 +1,4 @@
-import { and, eq, like, sql } from 'drizzle-orm';
+import { and, desc, eq, like, sql } from 'drizzle-orm';
 import { accounts, transactions } from '../db/schema';
 import type { Account } from '../types/account';
 import { db } from './db';
@@ -15,6 +15,15 @@ export async function getAccountsByMonth(yearMonth: string): Promise<Account[]> 
     .from(accounts)
     .where(eq(accounts.month, yearMonth))
     .orderBy(accounts.name);
+}
+
+/** Devuelve los meses distintos con cuentas, en formato 'YYYY-MM', orden descendente */
+export async function getAvailableAccountMonths(): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ month: accounts.month })
+    .from(accounts)
+    .orderBy(desc(accounts.month));
+  return rows.map((r) => r.month);
 }
 
 /** Inserta o actualiza el saldo inicial de una cuenta para un mes */

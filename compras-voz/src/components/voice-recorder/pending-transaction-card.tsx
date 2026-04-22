@@ -123,7 +123,7 @@ export function PendingTransactionCard({
                   onPress={() => onSelectAccount(acc.id)}
                 >
                   <Text style={[styles.accountChipText, transaction.accountId === acc.id && styles.accountChipTextActive]}>
-                    {acc.type === "bank" ? "🏦" : "💳"} {acc.name}
+                    {acc.type === "bank" ? "🏦" : "💳"} {acc.name} {acc.currency}
                   </Text>
                 </Pressable>
               ))}

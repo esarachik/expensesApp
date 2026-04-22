@@ -50,6 +50,17 @@ export async function getMonthlySummary(yearMonth: string): Promise<{
   return { totalIngresos, totalEgresos, balance: totalIngresos - totalEgresos };
 }
 
+/** Devuelve los meses distintos con transacciones, en formato 'YYYY-MM', orden descendente */
+export async function getAvailableMonths(): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({
+      month: sql<string>`strftime('%Y-%m', ${transactions.date})`,
+    })
+    .from(transactions)
+    .orderBy(desc(sql`strftime('%Y-%m', ${transactions.date})`));
+  return rows.map((r) => r.month);
+}
+
 /** Elimina una transacción por ID */
 export async function deleteTransaction(id: number): Promise<void> {
   await db.delete(transactions).where(eq(transactions.id, id));

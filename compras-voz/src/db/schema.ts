@@ -1,5 +1,5 @@
 import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import type { AccountType } from '../types/account';
+import type { AccountType, Currency } from '../types/account';
 import type { TransactionType } from '../types/transaction';
 
 // ─── Cuentas bancarias y tarjetas ───────────────────────────────────────────
@@ -7,6 +7,7 @@ export const accounts = sqliteTable('accounts', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   type: text('type').$type<AccountType>().notNull(), // 'bank' | 'credit_card'
+  currency: text('currency').$type<Currency>().notNull().default('UYU'), // 'ARS' | 'USD' | 'UYU'
   initialBalance: real('initialBalance').notNull().default(0),
   month: text('month').notNull(), // YYYY-MM: mes al que pertenece este saldo inicial
 });

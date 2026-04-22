@@ -1,13 +1,6 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import AccountBalancesList from "@/components/expenses/account-balances-list";
@@ -17,11 +10,7 @@ import { AppHeader } from "@/components/layout/app-header";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { getAccountsWithBalance } from "@/services/account";
-import {
-  deleteTransaction,
-  getAllTransactions,
-  getMonthlySummary,
-} from "@/services/transaction";
+import { deleteTransaction, getAvailableMonths, getMonthlySummary, getTransactionsByMonth } from "@/services/transaction";
 import type { Account } from "@/types/account";
 import type { Transaction } from "@/types/transaction";
 
@@ -35,30 +24,33 @@ export default function ResumenScreen() {
     totalEgresos: 0,
     balance: 0,
   });
-  const [accountBalances, setAccountBalances] = useState<
-    Array<Account & { currentBalance: number }>
-  >([]);
+  const [accountBalances, setAccountBalances] = useState<Array<Account & { currentBalance: number }>>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  });
+  const [availableMonths, setAvailableMonths] = useState<string[]>([]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const now = new Date();
-      const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-      const [txs, sum, accs] = await Promise.all([
-        getAllTransactions(),
-        getMonthlySummary(yearMonth),
-        getAccountsWithBalance(yearMonth),
+      const [txs, sum, accs, months] = await Promise.all([
+        getTransactionsByMonth(selectedMonth),
+        getMonthlySummary(selectedMonth),
+        getAccountsWithBalance(selectedMonth),
+        getAvailableMonths(),
       ]);
       setTransactions(txs);
       setSummary(sum);
       setAccountBalances(accs);
+      setAvailableMonths(months);
     } catch (e: any) {
       console.error("Error cargando datos:", e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedMonth]);
 
   useFocusEffect(
     useCallback(() => {
@@ -82,10 +74,7 @@ export default function ResumenScreen() {
 
   const renderItem = ({ item }: { item: Transaction }) => (
     <Pressable
-      style={[
-        styles.row,
-        { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#fff" },
-      ]}
+      style={[styles.row, { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#fff" }]}
       onPress={() =>
         router.push({
           pathname: "/transaction-detail",
@@ -103,14 +92,9 @@ export default function ResumenScreen() {
       onLongPress={() => item.id && handleDelete(item.id)}
     >
       <View style={styles.rowLeft}>
-        <Text style={styles.rowIcon}>
-          {item.type === "ingreso" ? "💰" : "💸"}
-        </Text>
+        <Text style={styles.rowIcon}>{item.type === "ingreso" ? "💰" : "💸"}</Text>
         <View style={styles.rowInfo}>
-          <Text
-            style={[styles.rowDesc, { color: colors.text }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.rowDesc, { color: colors.text }]} numberOfLines={1}>
             {item.description || item.category}
           </Text>
           <Text style={[styles.rowMeta, { color: colors.icon }]}>
@@ -118,12 +102,7 @@ export default function ResumenScreen() {
           </Text>
         </View>
       </View>
-      <Text
-        style={[
-          styles.rowAmount,
-          { color: item.type === "ingreso" ? "#4CAF50" : "#F44336" },
-        ]}
-      >
+      <Text style={[styles.rowAmount, { color: item.type === "ingreso" ? "#4CAF50" : "#F44336" }]}>
         {item.type === "ingreso" ? "+" : "-"}${item.amount.toLocaleString()}
       </Text>
     </Pressable>
@@ -131,10 +110,7 @@ export default function ResumenScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: colors.background }}
-        edges={["left", "right", "bottom"]}
-      >
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right", "bottom"]}>
         <AppHeader title="Resumen" />
         <View style={[styles.center, { backgroundColor: colors.background }]}>
           <ActivityIndicator size="large" color={colors.tint} />
@@ -144,10 +120,7 @@ export default function ResumenScreen() {
   }
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      edges={["left", "right", "bottom"]}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right", "bottom"]}>
       <AppHeader title="Resumen" />
 
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -155,6 +128,9 @@ export default function ResumenScreen() {
           totalIngresos={summary.totalIngresos}
           totalEgresos={summary.totalEgresos}
           balance={summary.balance}
+          yearMonth={selectedMonth}
+          availableMonths={availableMonths}
+          onMonthChange={setSelectedMonth}
         />
 
         <AccountBalancesList accounts={accountBalances} />

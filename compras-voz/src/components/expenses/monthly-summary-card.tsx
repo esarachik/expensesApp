@@ -2,54 +2,43 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import MonthPicker from "../shared/month-picker";
 
 type Props = {
   totalIngresos: number;
   totalEgresos: number;
   balance: number;
+  yearMonth: string;
+  availableMonths: string[];
+  onMonthChange: (month: string) => void;
 };
 
-export default function MonthlySummaryCard({
-  totalIngresos,
-  totalEgresos,
-  balance,
-}: Props) {
+export default function MonthlySummaryCard({ totalIngresos, totalEgresos, balance, yearMonth, availableMonths, onMonthChange }: Props) {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
 
+  const cardBg = colorScheme === "dark" ? "#1e1e1e" : "#f5f5f5";
+
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#f5f5f5" },
-      ]}
-    >
-      <Text style={[styles.title, { color: colors.text }]}>
-        Resumen del mes
-      </Text>
+    <View style={[styles.card, { backgroundColor: cardBg }]}>
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: colors.text }]}>Resumen del mes</Text>
+        <MonthPicker yearMonth={yearMonth} availableMonths={availableMonths} onMonthChange={onMonthChange} maxVisibleMonths={12} />
+      </View>
+
+      {/* Summary Table */}
       <View style={styles.row}>
         <View style={styles.item}>
           <Text style={[styles.label, { color: colors.icon }]}>Ingresos</Text>
-          <Text style={[styles.value, { color: "#4CAF50" }]}>
-            ${totalIngresos.toLocaleString()}
-          </Text>
+          <Text style={[styles.value, { color: "#4CAF50" }]}>${totalIngresos.toLocaleString()}</Text>
         </View>
         <View style={styles.item}>
           <Text style={[styles.label, { color: colors.icon }]}>Egresos</Text>
-          <Text style={[styles.value, { color: "#F44336" }]}>
-            ${totalEgresos.toLocaleString()}
-          </Text>
+          <Text style={[styles.value, { color: "#F44336" }]}>${totalEgresos.toLocaleString()}</Text>
         </View>
         <View style={styles.item}>
           <Text style={[styles.label, { color: colors.icon }]}>Balance</Text>
-          <Text
-            style={[
-              styles.value,
-              { color: balance >= 0 ? "#4CAF50" : "#F44336" },
-            ]}
-          >
-            ${balance.toLocaleString()}
-          </Text>
+          <Text style={[styles.value, { color: balance >= 0 ? "#4CAF50" : "#F44336" }]}>${balance.toLocaleString()}</Text>
         </View>
       </View>
     </View>
@@ -62,10 +51,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
   },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
   title: {
     fontSize: 16,
     fontWeight: "700",
-    marginBottom: 12,
   },
   row: {
     flexDirection: "row",

@@ -15,34 +15,23 @@ export default function AccountBalancesList({ accounts }: Props) {
   if (accounts.length === 0) return null;
 
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#f5f5f5" },
-      ]}
-    >
-      <Text style={[styles.title, { color: colors.text }]}>
-        Cuentas del mes
-      </Text>
+    <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#f5f5f5" }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Cuentas del mes</Text>
       {accounts.map((acc) => (
         <View key={acc.id} style={styles.row}>
           <Text style={styles.icon}>{acc.type === "bank" ? "🏦" : "💳"}</Text>
-          <Text style={[styles.name, { color: colors.text }]}>{acc.name}</Text>
+          <Text style={[styles.name, { color: colors.text }]}>
+            {acc.name} {acc.currency}
+          </Text>
           <Text
             style={[
               styles.balance,
               {
-                color:
-                  acc.type === "bank"
-                    ? acc.currentBalance >= 0
-                      ? "#4CAF50"
-                      : "#F44336"
-                    : "#F44336",
+                color: acc.type === "bank" ? (acc.currentBalance >= 0 ? "#4CAF50" : "#F44336") : "#F44336",
               },
             ]}
           >
-            {acc.type === "bank" ? "" : "Gastado: "}$
-            {acc.currentBalance.toLocaleString()}
+            {acc.type === "bank" ? "" : "Gastado: "}${acc.currentBalance.toLocaleString()}
           </Text>
         </View>
       ))}
