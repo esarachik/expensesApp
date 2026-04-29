@@ -1,10 +1,4 @@
-import {
-    ActivityIndicator,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
-} from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 type Props = {
   isRecording: boolean;
@@ -17,26 +11,11 @@ type Props = {
   onPlayback: () => void;
 };
 
-export function RecordControls({
-  isRecording,
-  processing,
-  hasPending,
-  isPlaying,
-  hasLastUri,
-  onRecord,
-  onTest,
-  onPlayback,
-}: Props) {
+export function RecordControls({ isRecording, processing, hasPending, isPlaying, hasLastUri, onRecord, onTest, onPlayback }: Props) {
   return (
     <>
-      <Pressable
-        style={[styles.button, isRecording && styles.buttonRecording]}
-        onPress={onRecord}
-        disabled={processing}
-      >
-        <Text style={styles.buttonText}>
-          {isRecording ? "⏹️ Detener" : "🎙️ Grabar"}
-        </Text>
+      <Pressable style={[styles.button, isRecording && styles.buttonRecording]} onPress={onRecord} disabled={processing}>
+        <Text style={styles.buttonText}>{isRecording ? "⏹️ Detener" : "🎙️ Grabar"}</Text>
       </Pressable>
 
       {!isRecording && !processing && !hasPending && (
@@ -54,9 +33,7 @@ export function RecordControls({
 
       {hasLastUri && !isRecording && !processing && (
         <Pressable style={styles.buttonSecondary} onPress={onPlayback}>
-          <Text style={styles.buttonSecondaryText}>
-            {isPlaying ? "⏹️ Parar" : "▶️ Escuchar"}
-          </Text>
+          <Text style={styles.buttonSecondaryText}>{isPlaying ? "⏹️ Parar" : "▶️ Escuchar"}</Text>
         </Pressable>
       )}
     </>

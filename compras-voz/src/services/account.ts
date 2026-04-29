@@ -77,7 +77,7 @@ export async function getAccountsWithBalance(
       const currentBalance =
         acc.type === 'bank'
           ? acc.initialBalance + ingresos - egresos
-          : egresos;
+          : acc.initialBalance + egresos;
 
       return { ...acc, currentBalance };
     }),
