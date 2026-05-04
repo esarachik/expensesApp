@@ -49,7 +49,7 @@ export default function AccountsScreen() {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<Omit<Account, "id"> & { id?: number }>(EMPTY_FORM);
+  const [form, setForm] = useState<Omit<Account, "id">>(EMPTY_FORM);
 
   const loadData = useCallback(async () => {
     setLoading(true);

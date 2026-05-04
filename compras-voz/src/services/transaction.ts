@@ -66,6 +66,22 @@ export async function deleteTransaction(id: number): Promise<void> {
   await db.delete(transactions).where(eq(transactions.id, id));
 }
 
+/** Actualiza una transacción existente por ID */
+export async function updateTransaction(t: Transaction): Promise<void> {
+  if (!t.id) {
+    throw new Error('Falta el ID de la transacción');
+  }
+
+  const { id, ...data } = t;
+  await db
+    .update(transactions)
+    .set({
+      ...data,
+      accountId: data.accountId ?? null,
+    })
+    .where(eq(transactions.id, id));
+}
+
 /** Obtiene el total de gastos por categoría para un mes dado */
 export async function getCategoryBreakdown(
   yearMonth: string,
