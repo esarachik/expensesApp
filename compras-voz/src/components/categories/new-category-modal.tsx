@@ -1,15 +1,5 @@
 import { useState } from "react";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -23,12 +13,7 @@ type Props = {
   onSaved: () => void;
 };
 
-export default function NewCategoryModal({
-  visible,
-  initialType = "egreso",
-  onClose,
-  onSaved,
-}: Props) {
+export default function NewCategoryModal({ visible, initialType = "egreso", onClose, onSaved }: Props) {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
 
@@ -56,30 +41,12 @@ export default function NewCategoryModal({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.overlay}
-      >
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.overlay}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View
-          style={[
-            styles.sheet,
-            { backgroundColor: colorScheme === "dark" ? "#1a1a1a" : "#fff" },
-          ]}
-        >
+        <View style={[styles.sheet, { backgroundColor: colorScheme === "dark" ? "#1a1a1a" : "#fff" }]}>
           <Text style={[styles.title, { color: colors.text }]}>
-            Nueva categoría de{" "}
-            <Text
-              style={{ color: newType === "ingreso" ? "#4CAF50" : "#F44336" }}
-            >
-              {newType}
-            </Text>
+            Nueva categoría de <Text style={{ color: newType === "ingreso" ? "#4CAF50" : "#F44336" }}>{newType}</Text>
           </Text>
 
           <View style={styles.typeRow}>
@@ -89,8 +56,7 @@ export default function NewCategoryModal({
                 style={[
                   styles.typeChip,
                   newType === t && {
-                    backgroundColor:
-                      t === "ingreso" ? "#4CAF5020" : "#F4433620",
+                    backgroundColor: t === "ingreso" ? "#4CAF5020" : "#F4433620",
                     borderColor: t === "ingreso" ? "#4CAF50" : "#F44336",
                   },
                 ]}
@@ -100,12 +66,7 @@ export default function NewCategoryModal({
                   style={[
                     styles.typeChipText,
                     {
-                      color:
-                        newType === t
-                          ? t === "ingreso"
-                            ? "#4CAF50"
-                            : "#F44336"
-                          : colors.icon,
+                      color: newType === t ? (t === "ingreso" ? "#4CAF50" : "#F44336") : colors.icon,
                     },
                   ]}
                 >
@@ -115,6 +76,7 @@ export default function NewCategoryModal({
             ))}
           </View>
 
+          <Text style={[styles.fieldLabel, { color: colors.icon }]}>Nombre de la categoría</Text>
           <TextInput
             style={[
               styles.input,
@@ -124,7 +86,6 @@ export default function NewCategoryModal({
                 backgroundColor: colorScheme === "dark" ? "#2a2a2a" : "#f9f9f9",
               },
             ]}
-            placeholder="Nombre de la categoría"
             placeholderTextColor={colors.icon}
             value={newName}
             onChangeText={setNewName}
@@ -134,14 +95,8 @@ export default function NewCategoryModal({
             onSubmitEditing={handleSave}
           />
 
-          <Pressable
-            style={[styles.saveBtn, saving && { opacity: 0.6 }]}
-            onPress={handleSave}
-            disabled={saving}
-          >
-            <Text style={styles.saveBtnText}>
-              {saving ? "Guardando..." : "Guardar"}
-            </Text>
+          <Pressable style={[styles.saveBtn, saving && { opacity: 0.6 }]} onPress={handleSave} disabled={saving}>
+            <Text style={styles.saveBtnText}>{saving ? "Guardando..." : "Guardar"}</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -185,6 +140,12 @@ const styles = StyleSheet.create({
   typeChipText: {
     fontWeight: "600",
     fontSize: 14,
+  },
+  fieldLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    marginTop: 4,
   },
   input: {
     borderWidth: 1,
