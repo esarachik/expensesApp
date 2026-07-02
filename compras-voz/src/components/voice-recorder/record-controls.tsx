@@ -1,3 +1,4 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 type Props = {
@@ -9,20 +10,24 @@ type Props = {
   onRecord: () => void;
   onTest: () => void;
   onPlayback: () => void;
+  onManualEntry: () => void;
 };
 
-export function RecordControls({ isRecording, processing, hasPending, isPlaying, hasLastUri, onRecord, onTest, onPlayback }: Props) {
+export function RecordControls({ isRecording, processing, hasPending, isPlaying, hasLastUri, onRecord, onTest, onPlayback, onManualEntry }: Props) {
   return (
     <>
       <Pressable style={[styles.button, isRecording && styles.buttonRecording]} onPress={onRecord} disabled={processing}>
-        <Text style={styles.buttonText}>{isRecording ? "⏹️ Detener" : "🎙️ Grabar"}</Text>
+        <View style={styles.btnRow}>
+          <MaterialIcons name={isRecording ? "stop" : "mic"} size={22} color="#fff" />
+          <Text style={styles.buttonText}>{isRecording ? "Detener" : "Grabar"}</Text>
+        </View>
       </Pressable>
 
-      {!isRecording && !processing && !hasPending && (
+      {/* {!isRecording && !processing && !hasPending && (
         <Pressable style={styles.buttonTest} onPress={onTest}>
           <Text style={styles.buttonTestText}>🧪 Prueba</Text>
         </Pressable>
-      )}
+      )} */}
 
       {processing && (
         <View style={styles.processingRow}>
@@ -33,7 +38,19 @@ export function RecordControls({ isRecording, processing, hasPending, isPlaying,
 
       {hasLastUri && !isRecording && !processing && (
         <Pressable style={styles.buttonSecondary} onPress={onPlayback}>
-          <Text style={styles.buttonSecondaryText}>{isPlaying ? "⏹️ Parar" : "▶️ Escuchar"}</Text>
+          <View style={styles.btnRow}>
+            <MaterialIcons name={isPlaying ? "stop" : "play-arrow"} size={18} color="#2196F3" />
+            <Text style={styles.buttonSecondaryText}>{isPlaying ? "Parar" : "Escuchar"}</Text>
+          </View>
+        </Pressable>
+      )}
+
+      {!isRecording && !processing && (
+        <Pressable style={styles.buttonSecondary} onPress={onManualEntry}>
+          <View style={styles.btnRow}>
+            <MaterialIcons name="edit" size={18} color="#2196F3" />
+            <Text style={styles.buttonSecondaryText}>Ingreso manual</Text>
+          </View>
         </Pressable>
       )}
     </>
@@ -81,6 +98,11 @@ const styles = StyleSheet.create({
   buttonSecondaryText: {
     color: "#2196F3",
     fontSize: 14,
+  },
+  btnRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   processingRow: {
     flexDirection: "row",

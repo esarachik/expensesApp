@@ -186,6 +186,25 @@ export function useVoiceRecorder() {
     getAccountsByMonth(yearMonth).then(setAvailableAccounts).catch(() => {});
   };
 
+  const onManualEntry = () => {
+    const today = dayjs().format('YYYY-MM-DD');
+    const yearMonth = today.substring(0, 7);
+    const blank: Transaction = {
+      date: today,
+      amount: 0,
+      type: 'egreso',
+      category: '',
+      description: '',
+      originalText: '',
+      accountId: null,
+    };
+    setResult(null);
+    setTranscription(null);
+    setPendingTransaction(blank);
+    setSelectedDate(new Date(today + 'T12:00:00'));
+    getAccountsByMonth(yearMonth).then(setAvailableAccounts).catch(() => {});
+  };
+
   const onPlayback = () => {
     if (!lastUri) return;
     if (playerStatus.playing) {
@@ -216,6 +235,7 @@ export function useVoiceRecorder() {
     onConfirm,
     onCancel,
     onTestTransaction,
+    onManualEntry,
     onPlayback,
   };
 }

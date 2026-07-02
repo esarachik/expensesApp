@@ -1,3 +1,4 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { useFocusEffect } from "expo-router";
@@ -197,7 +198,12 @@ export default function ResumenScreen() {
       onLongPress={() => item.id && handleDelete(item.id)}
     >
       <View style={styles.rowLeft}>
-        <Text style={styles.rowIcon}>{item.type === "ingreso" ? "💰" : "💸"}</Text>
+        <MaterialIcons
+          name={item.type === "ingreso" ? "trending-up" : "trending-down"}
+          size={26}
+          color={item.type === "ingreso" ? "#4CAF50" : "#F44336"}
+          style={styles.rowIcon}
+        />
         <View style={styles.rowInfo}>
           <Text style={[styles.rowDesc, { color: colors.text }]} numberOfLines={1}>
             {item.description || item.category}

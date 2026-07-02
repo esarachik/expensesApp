@@ -1,3 +1,4 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -21,10 +22,7 @@ interface TransactionDetailProps {
   onDelete?: () => void;
 }
 
-export function TransactionDetail({
-  transaction,
-  onDelete,
-}: TransactionDetailProps) {
+export function TransactionDetail({ transaction, onDelete }: TransactionDetailProps) {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
@@ -45,52 +43,21 @@ export function TransactionDetail({
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Tipo y monto */}
       <View style={styles.header}>
-        <Text style={styles.icon}>{isIngreso ? "💰" : "💸"}</Text>
-        <Text
-          style={[styles.amount, { color: isIngreso ? "#4CAF50" : "#F44336" }]}
-        >
+        <MaterialIcons name={isIngreso ? "trending-up" : "trending-down"} size={40} color={isIngreso ? "#4CAF50" : "#F44336"} style={styles.icon} />
+        <Text style={[styles.amount, { color: isIngreso ? "#4CAF50" : "#F44336" }]}>
           {isIngreso ? "+" : "-"}${Number(transaction.amount).toLocaleString()}
         </Text>
-        <View
-          style={[
-            styles.badge,
-            { backgroundColor: isIngreso ? "#E8F5E9" : "#FFEBEE" },
-          ]}
-        >
-          <Text
-            style={[
-              styles.badgeText,
-              { color: isIngreso ? "#4CAF50" : "#F44336" },
-            ]}
-          >
-            {transaction.type?.toUpperCase()}
-          </Text>
+        <View style={[styles.badge, { backgroundColor: isIngreso ? "#E8F5E9" : "#FFEBEE" }]}>
+          <Text style={[styles.badgeText, { color: isIngreso ? "#4CAF50" : "#F44336" }]}>{transaction.type?.toUpperCase()}</Text>
         </View>
       </View>
 
       {/* Detalles */}
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#f5f5f5" },
-        ]}
-      >
+      <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? "#1e1e1e" : "#f5f5f5" }]}>
         <DetailRow label="Fecha" value={transaction.date} color={colors} />
-        <DetailRow
-          label="Categoría"
-          value={transaction.category}
-          color={colors}
-        />
-        <DetailRow
-          label="Descripción"
-          value={transaction.description}
-          color={colors}
-        />
-        <DetailRow
-          label="Texto original"
-          value={transaction.originalText}
-          color={colors}
-        />
+        <DetailRow label="Categoría" value={transaction.category} color={colors} />
+        <DetailRow label="Descripción" value={transaction.description} color={colors} />
+        <DetailRow label="Texto original" value={transaction.originalText} color={colors} />
       </View>
 
       {/* Acciones */}
@@ -99,41 +66,17 @@ export function TransactionDetail({
       </Pressable>
 
       {/* Confirmación de eliminación */}
-      <Modal
-        visible={showConfirm}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowConfirm(false)}
-      >
+      <Modal visible={showConfirm} transparent animationType="fade" onRequestClose={() => setShowConfirm(false)}>
         <View style={styles.overlay}>
-          <View
-            style={[
-              styles.dialog,
-              { backgroundColor: colorScheme === "dark" ? "#2c2c2c" : "#fff" },
-            ]}
-          >
-            <Text style={[styles.dialogTitle, { color: colors.text }]}>
-              Eliminar
-            </Text>
-            <Text style={[styles.dialogMessage, { color: colors.text }]}>
-              ¿Seguro que querés eliminar esta transacción?
-            </Text>
+          <View style={[styles.dialog, { backgroundColor: colorScheme === "dark" ? "#2c2c2c" : "#fff" }]}>
+            <Text style={[styles.dialogTitle, { color: colors.text }]}>Eliminar</Text>
+            <Text style={[styles.dialogMessage, { color: colors.text }]}>¿Seguro que querés eliminar esta transacción?</Text>
             <View style={styles.dialogActions}>
-              <Pressable
-                style={[styles.dialogButton, styles.cancelButton]}
-                onPress={() => setShowConfirm(false)}
-              >
-                <Text style={[styles.dialogButtonText, { color: colors.text }]}>
-                  Cancelar
-                </Text>
+              <Pressable style={[styles.dialogButton, styles.cancelButton]} onPress={() => setShowConfirm(false)}>
+                <Text style={[styles.dialogButtonText, { color: colors.text }]}>Cancelar</Text>
               </Pressable>
-              <Pressable
-                style={[styles.dialogButton, styles.confirmDeleteButton]}
-                onPress={confirmDelete}
-              >
-                <Text style={[styles.dialogButtonText, { color: "#fff" }]}>
-                  Eliminar
-                </Text>
+              <Pressable style={[styles.dialogButton, styles.confirmDeleteButton]} onPress={confirmDelete}>
+                <Text style={[styles.dialogButtonText, { color: "#fff" }]}>Eliminar</Text>
               </Pressable>
             </View>
           </View>
@@ -143,21 +86,11 @@ export function TransactionDetail({
   );
 }
 
-function DetailRow({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value?: string;
-  color: { text: string; icon: string };
-}) {
+function DetailRow({ label, value, color }: { label: string; value?: string; color: { text: string; icon: string } }) {
   return (
     <View style={styles.detailRow}>
       <Text style={[styles.detailLabel, { color: color.icon }]}>{label}</Text>
-      <Text style={[styles.detailValue, { color: color.text }]}>
-        {value || "—"}
-      </Text>
+      <Text style={[styles.detailValue, { color: color.text }]}>{value || "—"}</Text>
     </View>
   );
 }

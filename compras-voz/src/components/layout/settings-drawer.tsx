@@ -1,14 +1,7 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
-import {
-  Animated,
-  Dimensions,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Animated, Dimensions, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Colors } from "@/constants/theme";
@@ -17,14 +10,14 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 const DRAWER_WIDTH = Dimensions.get("window").width * 0.72;
 
 interface MenuItem {
-  icon: string;
+  icon: keyof typeof MaterialIcons.glyphMap;
   label: string;
   route: string;
 }
 
 const MENU_ITEMS: MenuItem[] = [
-  { icon: "🏦", label: "Cuentas", route: "/(tabs)/accounts" },
-  { icon: "🏷️", label: "Categorías", route: "/(tabs)/categories" },
+  { icon: "account-balance", label: "Cuentas", route: "/(tabs)/accounts" },
+  { icon: "label", label: "Categorías", route: "/(tabs)/categories" },
 ];
 
 interface Props {
@@ -61,57 +54,38 @@ export function SettingsDrawer({ visible, onClose }: Props) {
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      onRequestClose={onClose}
-      statusBarTranslucent
-    >
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
       {/* Overlay oscuro */}
       <Pressable style={styles.overlay} onPress={onClose} />
 
       {/* Panel deslizante */}
       <Animated.View
-        style={[
-          styles.drawer,
-          { backgroundColor: colorScheme === "dark" ? "#1a1a1a" : "#fff" },
-          { transform: [{ translateX: slideAnim }] },
-        ]}
+        style={[styles.drawer, { backgroundColor: colorScheme === "dark" ? "#1a1a1a" : "#fff" }, { transform: [{ translateX: slideAnim }] }]}
       >
         <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "bottom"]}>
           <View style={styles.drawerHeader}>
-            <Text style={[styles.drawerTitle, { color: colors.text }]}>
-              Configuración
-            </Text>
+            <Text style={[styles.drawerTitle, { color: colors.text }]}>Configuración</Text>
             <Pressable onPress={onClose} style={styles.closeBtn} hitSlop={12}>
               <Text style={styles.closeBtnText}>✕</Text>
             </Pressable>
           </View>
 
           <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.icon }]}>
-              GESTIÓN
-            </Text>
+            <Text style={[styles.sectionLabel, { color: colors.icon }]}>GESTIÓN</Text>
             {MENU_ITEMS.map((item) => (
               <Pressable
                 key={item.route}
                 style={({ pressed }) => [
                   styles.menuItem,
                   pressed && {
-                    backgroundColor:
-                      colorScheme === "dark" ? "#2a2a2a" : "#f5f5f5",
+                    backgroundColor: colorScheme === "dark" ? "#2a2a2a" : "#f5f5f5",
                   },
                 ]}
                 onPress={() => handleNavigate(item.route)}
               >
-                <Text style={styles.menuItemIcon}>{item.icon}</Text>
-                <Text style={[styles.menuItemLabel, { color: colors.text }]}>
-                  {item.label}
-                </Text>
-                <Text style={[styles.menuItemArrow, { color: colors.icon }]}>
-                  ›
-                </Text>
+                <MaterialIcons name={item.icon} size={20} color={colors.icon} style={styles.menuItemIcon} />
+                <Text style={[styles.menuItemLabel, { color: colors.text }]}>{item.label}</Text>
+                <Text style={[styles.menuItemArrow, { color: colors.icon }]}>›</Text>
               </Pressable>
             ))}
           </View>

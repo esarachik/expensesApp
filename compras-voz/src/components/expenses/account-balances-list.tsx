@@ -1,3 +1,4 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { StyleSheet, Text, View } from "react-native";
 
 import { Colors } from "@/constants/theme";
@@ -19,7 +20,7 @@ export default function AccountBalancesList({ accounts }: Props) {
       <Text style={[styles.title, { color: colors.text }]}>Cuentas del mes</Text>
       {accounts.map((acc) => (
         <View key={acc.id} style={styles.row}>
-          <Text style={styles.icon}>{acc.type === "bank" ? "🏦" : "💳"}</Text>
+          <MaterialIcons name={acc.type === "bank" ? "account-balance" : "credit-card"} size={20} color="#888" style={styles.icon} />
           <Text style={[styles.name, { color: colors.text }]}>
             {acc.name} {acc.currency}
           </Text>

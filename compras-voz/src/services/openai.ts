@@ -30,6 +30,8 @@ export async function parseTransaction(
     - Si el usuario dice "cobré", "me pagaron", "recibí", "ingreso" o similar → tipo: "ingreso"
     - Si no se menciona fecha, usá la fecha de hoy: ${today}
     - El monto siempre debe ser un número positivo
+    - Intenta usar en la descripcion alguna palabra explicativa del texto original, pero no repitas el monto ni la categoría
+    - El usuario puede mencional la categoria, o decir "otros ingresos" o "otros egresos" si no hay una categoría que se pueda inferir usar la categoria adecuada
     - Respondé SOLO con JSON válido, sin texto adicional ni markdown
     
     Categorías disponibles para INGRESOS: ${ingresoNames.join(', ')}

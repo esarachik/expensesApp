@@ -1,6 +1,7 @@
 import { getCategoriesByType } from "@/services/category";
 import { Account } from "@/types/account";
 import { Transaction, TransactionType } from "@/types/transaction";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
@@ -56,13 +57,19 @@ export function PendingTransactionCard({
         {transcription && <Text style={styles.cardText}>"{transcription}"</Text>}
 
         <Pressable style={styles.field} onPress={onShowDatePicker}>
-          <Text style={styles.sectionLabel}>📅 Fecha</Text>
+          <View style={styles.labelRow}>
+            <MaterialIcons name="calendar-today" size={11} color="#999" />
+            <Text style={styles.sectionLabel}>Fecha</Text>
+          </View>
           <Text style={styles.fieldValue}>{transaction.date}</Text>
         </Pressable>
 
         <View style={styles.infoRow}>
           <View style={styles.field}>
-            <Text style={styles.sectionLabel}>💲 Monto</Text>
+            <View style={styles.labelRow}>
+              <MaterialIcons name="attach-money" size={11} color="#999" />
+              <Text style={styles.sectionLabel}>Monto</Text>
+            </View>
             <TextInput
               style={styles.fieldInput}
               value={amountText}
@@ -77,7 +84,10 @@ export function PendingTransactionCard({
         </View>
         <View style={styles.infoRow}>
           <View style={styles.field}>
-            <Text style={styles.sectionLabel}>📝 Descripción</Text>
+            <View style={styles.labelRow}>
+              <MaterialIcons name="notes" size={11} color="#999" />
+              <Text style={styles.sectionLabel}>Descripción</Text>
+            </View>
             <TextInput style={styles.fieldInput} value={transaction.description} onChangeText={onChangeDescription} />
           </View>
         </View>
@@ -87,15 +97,24 @@ export function PendingTransactionCard({
             style={[styles.typeChip, transaction.type === "ingreso" && styles.typeChipIngresoActive]}
             onPress={() => onSelectType("ingreso")}
           >
-            <Text style={[styles.typeChipText, transaction.type === "ingreso" && styles.typeChipIngresoTextActive]}>💰 Ingreso</Text>
+            <View style={styles.chipRow}>
+              <MaterialIcons name="trending-up" size={15} color={transaction.type === "ingreso" ? "#2e7d32" : "#999"} />
+              <Text style={[styles.typeChipText, transaction.type === "ingreso" && styles.typeChipIngresoTextActive]}>Ingreso</Text>
+            </View>
           </Pressable>
           <Pressable style={[styles.typeChip, transaction.type === "egreso" && styles.typeChipEgresoActive]} onPress={() => onSelectType("egreso")}>
-            <Text style={[styles.typeChipText, transaction.type === "egreso" && styles.typeChipEgresoTextActive]}>💸 Egreso</Text>
+            <View style={styles.chipRow}>
+              <MaterialIcons name="trending-down" size={15} color={transaction.type === "egreso" ? "#c62828" : "#999"} />
+              <Text style={[styles.typeChipText, transaction.type === "egreso" && styles.typeChipEgresoTextActive]}>Egreso</Text>
+            </View>
           </Pressable>
         </View>
         <View style={styles.categorySection}>
           <View style={styles.field}>
-            <Text style={styles.sectionLabel}>📁 Categoría</Text>
+            <View style={styles.labelRow}>
+              <MaterialIcons name="label" size={11} color="#999" />
+              <Text style={styles.sectionLabel}>Categoría</Text>
+            </View>
             <Picker
               selectedValue={transaction.category}
               onValueChange={(val) => onSelectCategory(val)}
@@ -111,7 +130,7 @@ export function PendingTransactionCard({
 
         {availableAccounts.length > 0 && (
           <View style={styles.accountSection}>
-            <Text style={styles.sectionLabel}>🏦 Cuenta</Text>
+            <Text style={styles.sectionLabel}>Cuenta</Text>
             <View style={styles.accountChips}>
               <Pressable style={[styles.accountChip, !transaction.accountId && styles.accountChipActive]} onPress={() => onSelectAccount(null)}>
                 <Text style={[styles.accountChipText, !transaction.accountId && styles.accountChipTextActive]}>Sin cuenta</Text>
@@ -123,7 +142,12 @@ export function PendingTransactionCard({
                   onPress={() => onSelectAccount(acc.id)}
                 >
                   <Text style={[styles.accountChipText, transaction.accountId === acc.id && styles.accountChipTextActive]}>
-                    {acc.type === "bank" ? "🏦" : "💳"} {acc.name} {acc.currency}
+                    <MaterialIcons
+                      name={acc.type === "bank" ? "account-balance" : "credit-card"}
+                      size={12}
+                      color={transaction.accountId === acc.id ? "#1976D2" : "#666"}
+                    />{" "}
+                    {acc.name} {acc.currency}
                   </Text>
                 </Pressable>
               ))}
@@ -135,10 +159,10 @@ export function PendingTransactionCard({
 
         <View style={styles.confirmRow}>
           <Pressable style={styles.cancelButton} onPress={onCancel} disabled={saving}>
-            <Text style={styles.cancelButtonText}>❌ Cancelar</Text>
+            <Text style={styles.cancelButtonText}>Cancelar</Text>
           </Pressable>
           <Pressable style={styles.confirmButton} onPress={onConfirm} disabled={saving}>
-            {saving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.confirmButtonText}>✅ Guardar</Text>}
+            {saving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.confirmButtonText}>Guardar</Text>}
           </Pressable>
         </View>
       </View>
@@ -193,13 +217,23 @@ const styles = StyleSheet.create({
     color: "#1976D2",
     paddingVertical: 2,
   },
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    marginBottom: 4,
+  },
+  chipRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
   sectionLabel: {
     fontSize: 11,
     color: "#999",
     fontWeight: "600",
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginBottom: 4,
   },
   divider: {
     height: 1,

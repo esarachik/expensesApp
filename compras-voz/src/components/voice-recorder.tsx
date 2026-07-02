@@ -25,6 +25,7 @@ export default function VoiceRecorder() {
     onConfirm,
     onCancel,
     onTestTransaction,
+    onManualEntry,
     onPlayback,
   } = useVoiceRecorder();
 
@@ -39,6 +40,7 @@ export default function VoiceRecorder() {
         onRecord={onRecord}
         onTest={onTestTransaction}
         onPlayback={onPlayback}
+        onManualEntry={onManualEntry}
       />
 
       {transcription && !pendingTransaction && (

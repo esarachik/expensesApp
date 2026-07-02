@@ -11,13 +11,13 @@ export interface Account {
 }
 
 export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
-  bank: '🏦 Banco',
-  credit_card: '💳 Tarjeta de crédito',
+  bank: 'Banco',
+  credit_card: 'Tarjeta de crédito',
 };
 
 export const CURRENCY_LABELS: Record<Currency, string> = {  
-  USD: '🇺🇸 Dólares',
-  UYU: '🇺🇾 Pesos uru.',
+  USD: 'Dólares',
+  UYU: 'Pesos uru.',
 };
 
 export const CURRENCY_SYMBOLS: Record<Currency, string> = {  

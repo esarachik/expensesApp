@@ -1,3 +1,4 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
@@ -128,7 +129,7 @@ export default function AccountsScreen() {
         onLongPress={() => onDelete(item)}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.cardIcon}>{isBank ? "🏦" : "💳"}</Text>
+          <MaterialIcons name={isBank ? "account-balance" : "credit-card"} size={28} color="#888" style={styles.cardIcon} />
           <View style={{ flex: 1 }}>
             <Text style={[styles.cardName, { color: colors.text }]}>{item.name}</Text>
             <Text style={[styles.cardType, { color: colors.icon }]}>
